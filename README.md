@@ -2,6 +2,25 @@
 
 This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
 
+## Features
+
+### Authentication & User Management
+
+- **Clerk Authentication**: Integrated with Clerk for secure user authentication
+- **OAuth Support**: Sign in with Google and Apple
+- **Email/Password**: Traditional email and password sign-up
+- **Profile Setup**: Guided profile completion flow for new users
+- **Convex Database**: User data stored in Convex with real-time sync
+
+### User Flow
+
+1. **Sign Up**: Users can sign up using OAuth (Google/Apple) or email/password
+2. **User Creation**: New users are automatically created in Convex database
+3. **Profile Setup**: Users are redirected to complete their profile with:
+   - Personal information (name, height, weight, gender)
+   - Nutrition goals (calories, protein, carbs, fat)
+4. **App Access**: Users can skip profile setup and complete it later
+
 ## Get started
 
 1. Install dependencies
@@ -10,10 +29,20 @@ This is an [Expo](https://expo.dev) project created with [`create-expo-app`](htt
    npm install
    ```
 
-2. Start the app
+2. Set up environment variables
+   - Create a `.env.local` file with your Clerk and Convex credentials
+   - Ensure `CONVEX_DEPLOYMENT` is set for your Convex deployment
+
+3. Start the app
 
    ```bash
    npx expo start
+   ```
+
+4. Start Convex development server (in another terminal)
+
+   ```bash
+   npx convex dev
    ```
 
 In the output, you'll find options to open the app in a
@@ -24,6 +53,19 @@ In the output, you'll find options to open the app in a
 - [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
 
 You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+
+## Database Schema
+
+### Users Table
+
+- `clerkId`: Clerk user ID (primary identifier)
+- `email`: User's email address
+- `firstName`, `lastName`: User's name
+- `height`, `weight`: Physical measurements (cm, kg)
+- `gender`: User's gender (male/female/other)
+- `calorieGoal`, `proteinGoal`, `carbGoal`, `fatGoal`: Nutrition goals
+- `profileCompleted`: Boolean flag for profile completion status
+- `createdAt`, `updatedAt`: Timestamps
 
 ## Get a fresh project
 
@@ -41,6 +83,8 @@ To learn more about developing your project with Expo, look at the following res
 
 - [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
 - [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+- [Clerk Documentation](https://clerk.com/docs): Learn about authentication and user management
+- [Convex Documentation](https://docs.convex.dev/): Learn about the real-time database
 
 ## Join the community
 

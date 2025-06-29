@@ -1,7 +1,7 @@
 import { SignOutButton } from "@/app/components/SignOutButton";
 import { useAuth, useUser } from "@clerk/clerk-expo";
-import { Redirect } from "expo-router";
-import { Text, View } from "react-native";
+import { Redirect, router } from "expo-router";
+import { Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function ProfileTab() {
@@ -11,6 +11,10 @@ export default function ProfileTab() {
   if (!isSignedIn) {
     return <Redirect href="/(auth)/sign-up" />;
   }
+
+  const navigateToProfileSetup = () => {
+    router.push("/(app)/profile-setup");
+  };
 
   return (
     <SafeAreaView className="flex-1 bg-white">
@@ -24,10 +28,20 @@ export default function ProfileTab() {
             {user?.firstName || user?.emailAddresses[0]?.emailAddress || "User"}
             !
           </Text>
-          <Text className="text-gray-600 text-center">
+          <Text className="text-gray-600 text-center mb-4">
             This is where your profile information and settings will be
             displayed.
           </Text>
+
+          {/* Profile Setup Button */}
+          <TouchableOpacity
+            onPress={navigateToProfileSetup}
+            className="bg-blue-500 py-3 px-6 rounded-lg"
+          >
+            <Text className="text-white text-center font-semibold">
+              Complete Profile Setup
+            </Text>
+          </TouchableOpacity>
         </View>
         <View className="flex-1 justify-end">
           <SignOutButton />

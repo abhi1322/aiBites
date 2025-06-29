@@ -1,16 +1,19 @@
-import { useAuth, useOAuth, useSignUp } from "@clerk/clerk-expo";
+import { useAuth, useOAuth, useSignUp, useUser } from "@clerk/clerk-expo";
+import { useMutation } from "convex/react";
 import { Link, useRouter } from "expo-router";
 import * as WebBrowser from "expo-web-browser";
 import * as React from "react";
 import { useCallback } from "react";
 import { Alert, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { api } from "../../convex/_generated/api";
 
 WebBrowser.maybeCompleteAuthSession();
 
 export default function SignUpScreen() {
   const { isLoaded, signUp, setActive } = useSignUp();
   const { isSignedIn } = useAuth();
+  const { user } = useUser();
   const { startOAuthFlow: startGoogleOAuthFlow } = useOAuth({
     strategy: "oauth_google",
   });
@@ -18,12 +21,27 @@ export default function SignUpScreen() {
     strategy: "oauth_apple",
   });
   const router = useRouter();
+  const createOrUpdateUser = useMutation(api.users.createOrUpdateUser);
 
   const [emailAddress, setEmailAddress] = React.useState("");
   const [password, setPassword] = React.useState("");
   const [pendingVerification, setPendingVerification] = React.useState(false);
   const [code, setCode] = React.useState("");
   const [loading, setLoading] = React.useState(false);
+
+  // Function to create user in Convex
+  const createUserInConvex = async (clerkId: string, email: string) => {
+    try {
+      await createOrUpdateUser({
+        clerkId,
+        email,
+        profileCompleted: false,
+      });
+    } catch (error) {
+      console.error("Failed to create user in Convex:", error);
+      // Don't throw error here as we don't want to block the sign-up flow
+    }
+  };
 
   // Redirect if already signed in
   React.useEffect(() => {
@@ -44,7 +62,10 @@ export default function SignUpScreen() {
 
       if (createdSessionId) {
         setActive!({ session: createdSessionId });
-        router.replace("/(app)/(tabs)");
+
+        // Create user in Convex - we'll handle this in the app layout
+        // The user data will be available after the session is set
+        router.replace("/(app)/profile-setup" as any);
       }
     } catch (err) {
       console.error("OAuth error", err);
@@ -70,7 +91,10 @@ export default function SignUpScreen() {
 
       if (createdSessionId) {
         setActive!({ session: createdSessionId });
-        router.replace("/(app)/(tabs)");
+
+        // Create user in Convex - we'll handle this in the app layout
+        // The user data will be available after the session is set
+        router.replace("/(app)/profile-setup" as any);
       }
     } catch (err) {
       console.error("OAuth error", err);
@@ -128,7 +152,12 @@ export default function SignUpScreen() {
       // If verification was completed, set the session to active
       if (signUpAttempt.status === "complete") {
         await setActive({ session: signUpAttempt.createdSessionId });
-        router.replace("/(app)/(tabs)");
+
+        // Create user in Convex
+        await createUserInConvex(signUpAttempt.createdUserId!, emailAddress);
+
+        // Redirect to profile setup instead of home
+        router.replace("/(app)/profile-setup" as any);
       } else {
         console.error(JSON.stringify(signUpAttempt, null, 2));
         Alert.alert("Error", "Verification failed. Please try again.");

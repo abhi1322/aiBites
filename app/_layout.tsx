@@ -6,6 +6,7 @@ import React, { JSX } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import "../global.css";
+import { ConvexProvider, convex } from "../lib/convex";
 import { LoadingScreen } from "./components/LoadingScreen";
 
 const publishableKey = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY!;
@@ -38,10 +39,12 @@ export default function RootLayout(): JSX.Element {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <ClerkProvider tokenCache={tokenCache} publishableKey={publishableKey}>
-        <SafeAreaProvider className="bg-white">
-          <StatusBar style="auto" />
-          <RootLayoutNav />
-        </SafeAreaProvider>
+        <ConvexProvider client={convex}>
+          <SafeAreaProvider className="bg-white">
+            <StatusBar style="auto" />
+            <RootLayoutNav />
+          </SafeAreaProvider>
+        </ConvexProvider>
       </ClerkProvider>
     </GestureHandlerRootView>
   );
