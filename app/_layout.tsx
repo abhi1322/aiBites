@@ -3,6 +3,7 @@ import { tokenCache } from "@clerk/clerk-expo/token-cache";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import React, { JSX } from "react";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import "../global.css";
 import { LoadingScreen } from "./components/LoadingScreen";
@@ -35,11 +36,13 @@ function RootLayoutNav() {
 
 export default function RootLayout(): JSX.Element {
   return (
-    <ClerkProvider tokenCache={tokenCache} publishableKey={publishableKey}>
-      <SafeAreaProvider className="bg-white">
-        <StatusBar style="auto" />
-        <RootLayoutNav />
-      </SafeAreaProvider>
-    </ClerkProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <ClerkProvider tokenCache={tokenCache} publishableKey={publishableKey}>
+        <SafeAreaProvider className="bg-white">
+          <StatusBar style="auto" />
+          <RootLayoutNav />
+        </SafeAreaProvider>
+      </ClerkProvider>
+    </GestureHandlerRootView>
   );
 }
