@@ -1,6 +1,7 @@
 import { useUser } from "@clerk/clerk-expo";
 import { useQuery } from "convex/react";
 import { useRouter } from "expo-router";
+import { ArrowLeft } from "lucide-react-native";
 import { ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { api } from "../../../convex/_generated/api";
 
@@ -11,7 +12,6 @@ export default function ProfileScreen() {
     api.users.getUserByClerkId,
     user?.id ? { clerkId: user.id } : "skip"
   );
-
 
   if (!user) return null;
   if (userData === undefined) return <Text>Loading...</Text>;
@@ -71,6 +71,9 @@ export default function ProfileScreen() {
         <Text>Carbs: {userData.carbGoal}g</Text>
         <Text>Fat: {userData.fatGoal}g</Text>
       </View>
+      <TouchableOpacity onPress={() => router.replace("/(app)/(tabs)/home")}>
+        <ArrowLeft size={28} color="#000" />
+      </TouchableOpacity>
     </ScrollView>
   );
 }
