@@ -1,16 +1,12 @@
-import { SignedIn, SignedOut } from "@clerk/clerk-expo";
-import { Redirect } from "expo-router";
-import React from "react";
+import { router } from "expo-router";
+import { useEffect } from "react";
 
-export default function RootIndex() {
-  return (
-    <>
-      <SignedIn>
-        <Redirect href="/(app)" />
-      </SignedIn>
-      <SignedOut>
-        <Redirect href="/(auth)/sign-in" />
-      </SignedOut>
-    </>
-  );
+export default function RootIndexRedirect() {
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      router.replace("/(auth)/sign-in");
+    }, 0);
+    return () => clearTimeout(timeout);
+  }, []);
+  return null;
 }

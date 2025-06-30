@@ -1,6 +1,6 @@
-import { useOAuth, useSignIn } from "@clerk/clerk-expo";
+import { useOAuth, useSignIn, useUser } from "@clerk/clerk-expo";
 import { Link, useRouter } from "expo-router";
-import React, { useCallback } from "react";
+import React, { useCallback, useEffect } from "react";
 import {
   Alert,
   KeyboardAvoidingView,
@@ -20,6 +20,7 @@ WebBrowser.maybeCompleteAuthSession();
 export default function SignInScreen() {
   const { signIn, setActive, isLoaded } = useSignIn();
   const router = useRouter();
+  const { user } = useUser();
 
   const [emailAddress, setEmailAddress] = React.useState("");
   const [password, setPassword] = React.useState("");
@@ -32,6 +33,13 @@ export default function SignInScreen() {
   const { startOAuthFlow: startAppleOAuthFlow } = useOAuth({
     strategy: "oauth_apple",
   });
+
+  // check is user is already logged in
+  useEffect(() => {
+    if (user) {
+      router.replace("../../(app)/(tabs)/home");
+    }
+  }, [user]);
 
   const onSignInPress = async () => {
     if (!isLoaded) return;
@@ -50,7 +58,7 @@ export default function SignInScreen() {
 
       if (signInAttempt.status === "complete") {
         await setActive({ session: signInAttempt.createdSessionId });
-        router.replace("/(app)");
+        router.replace("../../(app)/(tabs)/home");
       } else {
         console.error(JSON.stringify(signInAttempt, null, 2));
         Alert.alert("Error", "Sign in failed. Please try again.");
@@ -69,7 +77,7 @@ export default function SignInScreen() {
 
       if (createdSessionId && setActive) {
         setActive({ session: createdSessionId });
-        router.replace("/(app)");
+        router.replace("../../(app)/(tabs)/home");
       }
     } catch (err) {
       console.error("OAuth error", err);
@@ -83,7 +91,7 @@ export default function SignInScreen() {
 
       if (createdSessionId && setActive) {
         setActive({ session: createdSessionId });
-        router.replace("/(app)");
+        router.replace("../../(app)/(tabs)/home");
       }
     } catch (err) {
       console.error("OAuth error", err);

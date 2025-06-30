@@ -56,7 +56,7 @@ export default function SignUpScreen() {
       if (signUpAttempt.status === "complete") {
         console.log("Sign-up completed successfully");
         await setActive({ session: signUpAttempt.createdSessionId });
-        router.replace("/(app)");
+        router.replace("../../(app)/(tabs)/home");
       } else if (signUpAttempt.status === "missing_requirements") {
         console.log("Missing requirements, preparing email verification...");
         // Prepare email verification before showing verification screen
@@ -110,7 +110,7 @@ export default function SignUpScreen() {
       if (signUpAttempt.status === "complete") {
         console.log("Verification completed successfully");
         await setActive({ session: signUpAttempt.createdSessionId });
-        router.replace("/(app)");
+        router.replace("../../(app)/(tabs)/home");
       } else {
         console.error("Verification failed with status:", signUpAttempt.status);
         Alert.alert("Error", "Verification failed. Please try again.");
@@ -145,7 +145,7 @@ export default function SignUpScreen() {
 
       if (createdSessionId && setActive) {
         setActive({ session: createdSessionId });
-        router.replace("/(app)");
+        router.replace("../../(app)/(tabs)/home");
       }
     } catch (err) {
       console.error("OAuth error", err);
@@ -159,7 +159,7 @@ export default function SignUpScreen() {
 
       if (createdSessionId && setActive) {
         setActive({ session: createdSessionId });
-        router.replace("/(app)");
+        router.replace("../../(app)/(tabs)/home");
       }
     } catch (err) {
       console.error("OAuth error", err);

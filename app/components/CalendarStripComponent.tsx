@@ -15,7 +15,7 @@ export default function CalendarStripComponent({
   markedDates = [],
 }: CalendarStripComponentProps) {
   const today = moment();
-  const minDate = moment().subtract(15, "days");
+  const minDate = moment().subtract(20, "days");
   const maxDate = moment().add(3, "days");
 
   // Always mark today with a custom style

@@ -184,7 +184,7 @@ export default function ProfileSetupScreen() {
       Alert.alert("Error", "Failed to update profile. Please try again.");
     } finally {
       setIsLoading(false);
-      router.replace("/(app)/home");
+      router.replace("../(app)/(tabs)/home");
     }
   };
 
