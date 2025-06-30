@@ -1,9 +1,9 @@
 import { useUser } from "@clerk/clerk-expo";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import { useMutation } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import * as ImagePicker from "expo-image-picker";
 import { router } from "expo-router";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Alert,
   Image,
@@ -65,16 +65,58 @@ export default function ProfileSetupScreen() {
     fatGoal: "",
   });
 
+  // fetch using api from convex
+  const userData = useQuery(
+    api.users.getUserByClerkId,
+    user?.id ? { clerkId: user.id } : "skip"
+  );
+
+  console.log("userData", userData);
+
+  // if data exist then put in userData to profileData
+  useEffect(() => {
+    if (userData) {
+      setProfileData((prev) => ({
+        firstName: userData.firstName ?? prev.firstName,
+        lastName: userData.lastName ?? prev.lastName,
+        profileImage: userData.profileImage ?? prev.profileImage,
+        height:
+          userData.height !== undefined ? String(userData.height) : prev.height,
+        weight: userData.weight !== undefined ? userData.weight : prev.weight,
+        gender: userData.gender ?? prev.gender,
+        dateOfBirth: userData.dateOfBirth
+          ? new Date(userData.dateOfBirth)
+          : prev.dateOfBirth,
+        calorieGoal:
+          userData.calorieGoal !== undefined
+            ? String(userData.calorieGoal)
+            : prev.calorieGoal,
+        proteinGoal:
+          userData.proteinGoal !== undefined
+            ? String(userData.proteinGoal)
+            : prev.proteinGoal,
+        carbGoal:
+          userData.carbGoal !== undefined
+            ? String(userData.carbGoal)
+            : prev.carbGoal,
+        fatGoal:
+          userData.fatGoal !== undefined
+            ? String(userData.fatGoal)
+            : prev.fatGoal,
+      }));
+    }
+  }, [userData]);
+
   // UI state
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+
+  const headerHeight = Platform.OS === "ios" ? 44 : 0; // fallback if useHeaderHeight is not available
 
   // Update profile data
   const updateProfileData = (updates: Partial<ProfileData>) => {
     setProfileData((prev) => ({ ...prev, ...updates }));
   };
-
-  console.log("userData", user?.imageUrl);
 
   // Navigation functions
   const goToNextStep = () => {
@@ -500,7 +542,7 @@ export default function ProfileSetupScreen() {
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={{ flex: 1 }}
-        keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
+        keyboardVerticalOffset={headerHeight + 20}
       >
         {/* Progress Bar */}
         <ProgressBar />
@@ -509,6 +551,7 @@ export default function ProfileSetupScreen() {
           className="flex-1 px-6"
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="always"
+          keyboardDismissMode="on-drag"
           contentContainerStyle={{ paddingBottom: 40 }}
         >
           {/* Step Content */}
@@ -572,3 +615,7 @@ export default function ProfileSetupScreen() {
     </SafeAreaView>
   );
 }
+
+export const options = {
+  headerShown: false,
+};
