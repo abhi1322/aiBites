@@ -9,8 +9,15 @@ if (!CONVEX_URL) {
   );
 }
 
-// Create a Convex client for React Native
-export const convex = new ConvexReactClient(CONVEX_URL);
+// Create a singleton Convex client for React Native
+let convexClient: ConvexReactClient | null = null;
+
+export const convex = (() => {
+  if (!convexClient) {
+    convexClient = new ConvexReactClient(CONVEX_URL);
+  }
+  return convexClient;
+})();
 
 // Export the provider component
 export { ConvexProvider };

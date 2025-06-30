@@ -1,89 +1,42 @@
-import { useAuth, useOAuth, useSignIn } from "@clerk/clerk-expo";
+import { useOAuth, useSignIn } from "@clerk/clerk-expo";
 import { Link, useRouter } from "expo-router";
-import * as WebBrowser from "expo-web-browser";
 import React, { useCallback } from "react";
-import { Alert, Text, TextInput, TouchableOpacity, View } from "react-native";
+import {
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+
+import * as WebBrowser from "expo-web-browser";
 
 WebBrowser.maybeCompleteAuthSession();
 
 export default function SignInScreen() {
   const { signIn, setActive, isLoaded } = useSignIn();
-  const { isSignedIn } = useAuth();
-  const { startOAuthFlow: startGoogleOAuthFlow } = useOAuth({
-    strategy: "oauth_google",
-  });
-  const { startOAuthFlow: startAppleOAuthFlow } = useOAuth({
-    strategy: "oauth_apple",
-  });
   const router = useRouter();
 
   const [emailAddress, setEmailAddress] = React.useState("");
   const [password, setPassword] = React.useState("");
   const [loading, setLoading] = React.useState(false);
 
-  // Redirect if already signed in
-  React.useEffect(() => {
-    if (isLoaded && isSignedIn) {
-      router.replace("/(app)/(tabs)");
-    }
-  }, [isLoaded, isSignedIn, router]);
+  // OAuth hooks
+  const { startOAuthFlow: startGoogleOAuthFlow } = useOAuth({
+    strategy: "oauth_google",
+  });
+  const { startOAuthFlow: startAppleOAuthFlow } = useOAuth({
+    strategy: "oauth_apple",
+  });
 
-  const onGooglePress = useCallback(async () => {
-    if (isSignedIn) {
-      router.replace("/(app)/(tabs)");
-      return;
-    }
-
-    try {
-      setLoading(true);
-      const { createdSessionId, setActive } = await startGoogleOAuthFlow();
-
-      if (createdSessionId) {
-        setActive!({ session: createdSessionId });
-        router.replace("/(app)/(tabs)");
-      }
-    } catch (err) {
-      console.error("OAuth error", err);
-      if (err instanceof Error && err.message.includes("already signed in")) {
-        router.replace("/(app)/(tabs)");
-      } else {
-        Alert.alert("Error", "Failed to sign in with Google");
-      }
-    } finally {
-      setLoading(false);
-    }
-  }, [isSignedIn, router]);
-
-  const onApplePress = useCallback(async () => {
-    if (isSignedIn) {
-      router.replace("/(app)/(tabs)");
-      return;
-    }
-
-    try {
-      setLoading(true);
-      const { createdSessionId, setActive } = await startAppleOAuthFlow();
-
-      if (createdSessionId) {
-        setActive!({ session: createdSessionId });
-        router.replace("/(app)/(tabs)");
-      }
-    } catch (err) {
-      console.error("OAuth error", err);
-      if (err instanceof Error && err.message.includes("already signed in")) {
-        router.replace("/(app)/(tabs)");
-      } else {
-        Alert.alert("Error", "Failed to sign in with Apple");
-      }
-    } finally {
-      setLoading(false);
-    }
-  }, [isSignedIn, router]);
-
-  // Handle the submission of the sign-in form
   const onSignInPress = async () => {
-    if (!isLoaded || !emailAddress || !password) {
+    if (!isLoaded) return;
+
+    if (!emailAddress || !password) {
       Alert.alert("Error", "Please fill in all fields");
       return;
     }
@@ -95,10 +48,9 @@ export default function SignInScreen() {
         password,
       });
 
-      // If sign-in process is complete, set the created session as active
       if (signInAttempt.status === "complete") {
         await setActive({ session: signInAttempt.createdSessionId });
-        router.replace("/(app)/(tabs)");
+        router.replace("/(app)");
       } else {
         console.error(JSON.stringify(signInAttempt, null, 2));
         Alert.alert("Error", "Sign in failed. Please try again.");
@@ -111,92 +63,136 @@ export default function SignInScreen() {
     }
   };
 
-  // Don't render if already signed in
-  if (isLoaded && isSignedIn) {
-    return null;
-  }
+  const onGooglePress = useCallback(async () => {
+    try {
+      const { createdSessionId, setActive } = await startGoogleOAuthFlow();
+
+      if (createdSessionId && setActive) {
+        setActive({ session: createdSessionId });
+        router.replace("/(app)");
+      }
+    } catch (err) {
+      console.error("OAuth error", err);
+      Alert.alert("Error", "Google sign in failed. Please try again.");
+    }
+  }, []);
+
+  const onApplePress = useCallback(async () => {
+    try {
+      const { createdSessionId, setActive } = await startAppleOAuthFlow();
+
+      if (createdSessionId && setActive) {
+        setActive({ session: createdSessionId });
+        router.replace("/(app)");
+      }
+    } catch (err) {
+      console.error("OAuth error", err);
+      Alert.alert("Error", "Apple sign in failed. Please try again.");
+    }
+  }, []);
 
   return (
     <SafeAreaView className="flex-1 bg-white">
-      <View className="flex-1 items-center justify-center px-6">
-        <View className="w-full max-w-sm gap-4">
-          <View className="text-center">
-            <Text className="text-3xl font-bold text-gray-900 mb-2">
-              Welcome Back
-            </Text>
-            <Text className="text-gray-600">Sign in to your account</Text>
-          </View>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={{ flex: 1 }}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
+      >
+        <ScrollView
+          className="flex-1"
+          contentContainerStyle={{ flexGrow: 1 }}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
+          <View className="flex-1 items-center justify-center px-6 py-8">
+            <View className="w-full max-w-sm gap-4">
+              <View className="text-center">
+                <Text className="text-3xl font-bold text-gray-900 mb-2">
+                  Welcome Back
+                </Text>
+                <Text className="text-gray-600">Sign in to your account</Text>
+              </View>
 
-          <View className="gap-4">
-            {/* Social Sign-in Buttons */}
-            <TouchableOpacity
-              onPress={onGooglePress}
-              disabled={loading}
-              className="w-full py-3 border border-gray-300 rounded-lg flex-row items-center justify-center space-x-2"
-            >
-              <Text className="text-gray-700 font-semibold">
-                Continue with Google
-              </Text>
-            </TouchableOpacity>
+              {/* Social Login Buttons */}
+              <View className="space-y-3">
+                <TouchableOpacity
+                  onPress={onGooglePress}
+                  className="w-full py-3 px-4 border border-gray-300 rounded-lg flex-row items-center justify-center space-x-3"
+                >
+                  <Text className="text-2xl">🔍</Text>
+                  <Text className="text-gray-700 font-semibold text-base">
+                    Continue with Google
+                  </Text>
+                </TouchableOpacity>
 
-            <TouchableOpacity
-              onPress={onApplePress}
-              disabled={loading}
-              className="w-full py-3 bg-black rounded-lg flex-row items-center justify-center space-x-2"
-            >
-              <Text className="text-white font-semibold">
-                Continue with Apple
-              </Text>
-            </TouchableOpacity>
+                {Platform.OS === "ios" && (
+                  <TouchableOpacity
+                    onPress={onApplePress}
+                    className="w-full py-3 px-4 bg-black rounded-lg flex-row items-center justify-center space-x-3"
+                  >
+                    <Text className="text-2xl">🍎</Text>
+                    <Text className="text-white font-semibold text-base">
+                      Continue with Apple
+                    </Text>
+                  </TouchableOpacity>
+                )}
+              </View>
 
-            <View className="flex-row items-center space-x-4">
-              <View className="flex-1 h-px bg-gray-300" />
-              <Text className="text-gray-500">or</Text>
-              <View className="flex-1 h-px bg-gray-300" />
+              {/* Divider */}
+              <View className="flex-row items-center space-x-4">
+                <View className="flex-1 h-px bg-gray-300" />
+                <Text className="text-gray-500 font-medium">or</Text>
+                <View className="flex-1 h-px bg-gray-300" />
+              </View>
+
+              <View className="gap-4">
+                <TextInput
+                  autoCapitalize="none"
+                  value={emailAddress}
+                  placeholder="Email address"
+                  onChangeText={(emailAddress) => setEmailAddress(emailAddress)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg text-base"
+                  keyboardType="email-address"
+                  returnKeyType="next"
+                  blurOnSubmit={false}
+                />
+
+                <TextInput
+                  value={password}
+                  placeholder="Password"
+                  secureTextEntry={true}
+                  onChangeText={(password) => setPassword(password)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg text-base"
+                  returnKeyType="done"
+                  blurOnSubmit={true}
+                />
+
+                <TouchableOpacity
+                  onPress={onSignInPress}
+                  disabled={loading}
+                  className={`w-full py-3 rounded-lg ${loading ? "bg-gray-400" : "bg-blue-600"}`}
+                >
+                  <Text className="text-white text-center font-semibold text-base">
+                    {loading ? "Signing In..." : "Sign In"}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+
+              <View className="text-center">
+                <Text className="text-gray-600">
+                  Don&apos;t have an account?{" "}
+                  <Link
+                    href="/(auth)/sign-up"
+                    className="text-blue-600 font-semibold"
+                  >
+                    Sign up
+                  </Link>
+                </Text>
+              </View>
             </View>
-
-            {/* Email/Password Form */}
-            <TextInput
-              autoCapitalize="none"
-              value={emailAddress}
-              placeholder="Email address"
-              onChangeText={(emailAddress) => setEmailAddress(emailAddress)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg text-base"
-              keyboardType="email-address"
-            />
-
-            <TextInput
-              value={password}
-              placeholder="Password"
-              secureTextEntry={true}
-              onChangeText={(password) => setPassword(password)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg text-base"
-            />
-
-            <TouchableOpacity
-              onPress={onSignInPress}
-              disabled={loading}
-              className={`w-full py-3 rounded-lg ${loading ? "bg-gray-400" : "bg-blue-600"}`}
-            >
-              <Text className="text-white text-center font-semibold text-base">
-                {loading ? "Signing In..." : "Sign In"}
-              </Text>
-            </TouchableOpacity>
           </View>
-
-          <View className="text-center">
-            <Text className="text-gray-600">
-              Don&apos;t have an account?{" "}
-              <Link
-                href="/(auth)/sign-up"
-                className="text-blue-600 font-semibold"
-              >
-                Sign up
-              </Link>
-            </Text>
-          </View>
-        </View>
-      </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }

@@ -1,13 +1,12 @@
-import { ClerkProvider, useAuth } from "@clerk/clerk-expo";
+import { ClerkProvider } from "@clerk/clerk-expo";
 import { tokenCache } from "@clerk/clerk-expo/token-cache";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import React, { JSX } from "react";
+import React from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import "../global.css";
 import { ConvexProvider, convex } from "../lib/convex";
-import { LoadingScreen } from "./components/LoadingScreen";
 
 const publishableKey = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY!;
 
@@ -17,32 +16,17 @@ if (!publishableKey) {
   );
 }
 
-function RootLayoutNav() {
-  const { isLoaded, isSignedIn } = useAuth();
-
-  if (!isLoaded) {
-    return <LoadingScreen />;
-  }
-
-  return (
-    <Stack screenOptions={{ headerShown: false }}>
-      {isSignedIn ? (
-        <Stack.Screen name="(app)" options={{ headerShown: false }} />
-      ) : (
-        <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-      )}
-    </Stack>
-  );
-}
-
-export default function RootLayout(): JSX.Element {
+export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <ClerkProvider tokenCache={tokenCache} publishableKey={publishableKey}>
         <ConvexProvider client={convex}>
           <SafeAreaProvider className="bg-white">
             <StatusBar style="auto" />
-            <RootLayoutNav />
+            <Stack screenOptions={{ headerShown: false }}>
+              <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+              <Stack.Screen name="(app)" options={{ headerShown: false }} />
+            </Stack>
           </SafeAreaProvider>
         </ConvexProvider>
       </ClerkProvider>

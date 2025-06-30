@@ -8,15 +8,17 @@ export default defineSchema({
     email: v.string(),
     firstName: v.optional(v.string()),
     lastName: v.optional(v.string()),
-    height: v.optional(v.number()), // cm
-    weight: v.optional(v.number()), // kg
+    profileImage: v.optional(v.string()), // Profile image URL
+    height: v.optional(v.float64()), // cm
+    weight: v.optional(v.float64()), // kg
     gender: v.optional(
       v.union(v.literal("male"), v.literal("female"), v.literal("other"))
     ),
-    calorieGoal: v.optional(v.number()), // Daily calorie goal
-    proteinGoal: v.optional(v.number()), // Daily protein goal (grams)
-    carbGoal: v.optional(v.number()), // Daily carb goal (grams)
-    fatGoal: v.optional(v.number()), // Daily fat goal (grams)
+    calorieGoal: v.optional(v.float64()), // Daily calorie goal
+    proteinGoal: v.optional(v.float64()), // Daily protein goal (grams)
+    carbGoal: v.optional(v.float64()), // Daily carb goal (grams)
+    fatGoal: v.optional(v.float64()), // Daily fat goal (grams)
+    dateOfBirth: v.optional(v.float64()), // Date of birth as timestamp
     profileCompleted: v.optional(v.boolean()), // Whether user has completed profile setup
     createdAt: v.number(), // Timestamp
     updatedAt: v.number(), // Timestamp

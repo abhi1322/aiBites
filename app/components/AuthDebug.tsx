@@ -2,7 +2,7 @@ import { useAuth, useUser } from "@clerk/clerk-expo";
 import React from "react";
 import { Text, View } from "react-native";
 
-export const AuthDebug = () => {
+export default function AuthDebug() {
   const { isLoaded, isSignedIn } = useAuth();
   const { user } = useUser();
 
@@ -30,4 +30,4 @@ export const AuthDebug = () => {
       )}
     </View>
   );
-};
+}

@@ -8,15 +8,17 @@ export const createOrUpdateUser = mutation({
     email: v.string(),
     firstName: v.optional(v.string()),
     lastName: v.optional(v.string()),
-    height: v.optional(v.number()),
-    weight: v.optional(v.number()),
+    profileImage: v.optional(v.string()),
+    height: v.optional(v.float64()),
+    weight: v.optional(v.float64()),
     gender: v.optional(
       v.union(v.literal("male"), v.literal("female"), v.literal("other"))
     ),
-    calorieGoal: v.optional(v.number()),
-    proteinGoal: v.optional(v.number()),
-    carbGoal: v.optional(v.number()),
-    fatGoal: v.optional(v.number()),
+    calorieGoal: v.optional(v.float64()),
+    proteinGoal: v.optional(v.float64()),
+    carbGoal: v.optional(v.float64()),
+    fatGoal: v.optional(v.float64()),
+    dateOfBirth: v.optional(v.float64()),
     profileCompleted: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
@@ -73,10 +75,10 @@ export const isProfileComplete = query({
 export const updateUserGoals = mutation({
   args: {
     clerkId: v.string(),
-    calorieGoal: v.optional(v.number()),
-    proteinGoal: v.optional(v.number()),
-    carbGoal: v.optional(v.number()),
-    fatGoal: v.optional(v.number()),
+    calorieGoal: v.optional(v.float64()),
+    proteinGoal: v.optional(v.float64()),
+    carbGoal: v.optional(v.float64()),
+    fatGoal: v.optional(v.float64()),
   },
   handler: async (ctx, args) => {
     const user = await ctx.db

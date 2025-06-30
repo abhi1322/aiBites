@@ -9,11 +9,11 @@ interface CalendarStripComponentProps {
   markedDates?: (string | moment.Moment)[];
 }
 
-export const CalendarStripComponent: React.FC<CalendarStripComponentProps> = ({
+export default function CalendarStripComponent({
   selectedDate,
   onDateChange,
   markedDates = [],
-}) => {
+}: CalendarStripComponentProps) {
   const today = moment();
   const minDate = moment().subtract(15, "days");
   const maxDate = moment().add(3, "days");
@@ -69,7 +69,7 @@ export const CalendarStripComponent: React.FC<CalendarStripComponentProps> = ({
       />
     </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {

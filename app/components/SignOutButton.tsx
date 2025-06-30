@@ -1,39 +1,25 @@
 import { useClerk } from "@clerk/clerk-expo";
-import { Alert, Text, TouchableOpacity } from "react-native";
+import React from "react";
+import { Text, TouchableOpacity } from "react-native";
 
-export const SignOutButton = () => {
+export default function SignOutButton() {
   // Use `useClerk()` to access the `signOut()` function
   const { signOut } = useClerk();
 
   const handleSignOut = async () => {
-    Alert.alert("Sign Out", "Are you sure you want to sign out?", [
-      {
-        text: "Cancel",
-        style: "cancel",
-      },
-      {
-        text: "Sign Out",
-        style: "destructive",
-        onPress: async () => {
-          try {
-            await signOut();
-          } catch (err) {
-            console.error("Error signing out:", err);
-            Alert.alert("Error", "Failed to sign out. Please try again.");
-          }
-        },
-      },
-    ]);
+    try {
+      await signOut();
+    } catch (err) {
+      console.error("Sign out error:", JSON.stringify(err, null, 2));
+    }
   };
 
   return (
     <TouchableOpacity
       onPress={handleSignOut}
-      className="w-full py-3 bg-red-600 rounded-lg"
+      className="px-4 py-2 bg-red-500 rounded-lg"
     >
-      <Text className="text-white text-center font-semibold text-base">
-        Sign Out
-      </Text>
+      <Text className="text-white font-semibold">Sign Out</Text>
     </TouchableOpacity>
   );
-};
+}

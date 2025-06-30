@@ -1,11 +1,11 @@
 import { Stack } from "expo-router";
-import { StatusBar } from "react-native";
+import React from "react";
 
-export default function AuthRoutesLayout() {
+export default function AuthLayout() {
   return (
-    <>
-      <StatusBar barStyle={"default"} backgroundColor={"auto"} />
-      <Stack screenOptions={{ headerShown: false }} />
-    </>
+    <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="sign-in" options={{ headerShown: false }} />
+      <Stack.Screen name="sign-up" options={{ headerShown: false }} />
+    </Stack>
   );
 }
