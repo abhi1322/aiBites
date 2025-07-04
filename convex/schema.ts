@@ -39,8 +39,13 @@ export default defineSchema({
     servingSize: v.optional(v.string()), // e.g., "1 cup", "100g"
     barcode: v.optional(v.string()), // For packaged foods
     imageUrl: v.optional(v.string()), // Food image URL
+    compressedImageUrl: v.optional(v.string()), // Compressed image URL
     isCustom: v.boolean(), // Whether this is a user-created food
     createdBy: v.optional(v.string()), // Clerk user ID who created this
+    createdById: v.optional(v.string()), // New: explicit user ID
+    items: v.optional(
+      v.array(v.object({ name: v.string(), quantity: v.string() }))
+    ),
     createdAt: v.number(),
     updatedAt: v.number(),
   })

@@ -46,7 +46,7 @@ export default function ProfileScreen() {
           </TouchableOpacity>
           <TouchableOpacity
             className="px-4 py-2 bg-gray-200 rounded-lg"
-            onPress={() => router.push("/(app)/camera")}
+            onPress={() => router.push("/(app)/(tabs)/camera")}
           >
             <Text className="text-gray-700 font-semibold">Settings</Text>
           </TouchableOpacity>

@@ -6,17 +6,20 @@ export const createFoodItem = mutation({
   args: {
     name: v.string(),
     calories: v.number(),
-    protein: v.optional(v.number()),
-    carbs: v.optional(v.number()),
-    fat: v.optional(v.number()),
+    protein: v.number(),
+    carbs: v.number(),
+    fat: v.number(),
     fiber: v.optional(v.number()),
-    sugar: v.optional(v.number()),
-    sodium: v.optional(v.number()),
-    servingSize: v.optional(v.string()),
-    barcode: v.optional(v.string()),
-    imageUrl: v.optional(v.string()),
+    items: v.optional(
+      v.array(v.object({ name: v.string(), quantity: v.string() }))
+    ),
+    // clickedTime: v.number(),
+    servingSize: v.string(),
+    imageUrl: v.string(),
+    compressedImageUrl: v.string(),
     isCustom: v.boolean(),
-    createdBy: v.optional(v.string()),
+    barcode: v.optional(v.string()),
+    createdById: v.string(),
   },
   handler: async (ctx, args) => {
     const now = Date.now();
@@ -122,5 +125,12 @@ export const deleteFoodFromDailyLog = mutation({
   args: { logId: v.id("dailyLogs") },
   handler: async (ctx, args) => {
     await ctx.db.delete(args.logId);
+  },
+});
+
+export const getFoodItemById = query({
+  args: { id: v.id("foodItems") },
+  handler: async (ctx, args) => {
+    return await ctx.db.get(args.id);
   },
 });
