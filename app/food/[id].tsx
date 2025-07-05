@@ -13,6 +13,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export const unstable_settings = {
   // This disables the swipe back gesture and the hardware back button
@@ -61,57 +62,59 @@ export default function FoodDetailScreen() {
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      {/* Back to Home Button */}
-      <TouchableOpacity
-        style={styles.backButton}
-        onPress={() => router.replace("/home")}
-      >
-        <Text style={styles.backButtonText}>Back to Home</Text>
-      </TouchableOpacity>
+    <SafeAreaView>
+      <ScrollView contentContainerStyle={styles.container}>
+        {/* Back to Home Button */}
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => router.replace("/home")}
+        >
+          <Text style={styles.backButtonText}>Back to Home</Text>
+        </TouchableOpacity>
 
-      <Text style={styles.title}>{food.name}</Text>
-      {food.imageUrl && (
-        <Image
-          source={{ uri: food.imageUrl }}
-          style={styles.image}
-          resizeMode="cover"
-        />
-      )}
-      {food.compressedImageUrl && (
-        <Image
-          source={{ uri: food.compressedImageUrl }}
-          style={styles.compressedImage}
-          resizeMode="cover"
-        />
-      )}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Calories</Text>
-        <Text style={styles.value}>{food.calories} kcal</Text>
-      </View>
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Macronutrients</Text>
-        <Text>Protein: {food.protein}g</Text>
-        <Text>Carbs: {food.carbs}g</Text>
-        <Text>Fats: {food.fat}g</Text>
-        {food.fiber !== undefined && <Text>Fiber: {food.fiber}g</Text>}
-      </View>
-      {food.items && food.items.length > 0 && (
+        <Text style={styles.title}>{food.name}</Text>
+        {food.imageUrl && (
+          <Image
+            source={{ uri: food.imageUrl }}
+            style={styles.image}
+            resizeMode="cover"
+          />
+        )}
+        {food.compressedImageUrl && (
+          <Image
+            source={{ uri: food.compressedImageUrl }}
+            style={styles.compressedImage}
+            resizeMode="cover"
+          />
+        )}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Items</Text>
-          {food.items.map((item: any, idx: number) => (
-            <Text key={idx}>
-              {item.name} - {item.quantity}
-            </Text>
-          ))}
+          <Text style={styles.sectionTitle}>Calories</Text>
+          <Text style={styles.value}>{food.calories} kcal</Text>
         </View>
-      )}
-      <View style={styles.section}>
-        <Text>Serving Size: {food.servingSize}</Text>
-        {food.barcode && <Text>Barcode: {food.barcode}</Text>}
-        <Text>Created By: {food.createdById || food.createdBy}</Text>
-      </View>
-    </ScrollView>
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Macronutrients</Text>
+          <Text>Protein: {food.protein}g</Text>
+          <Text>Carbs: {food.carbs}g</Text>
+          <Text>Fats: {food.fat}g</Text>
+          {food.fiber !== undefined && <Text>Fiber: {food.fiber}g</Text>}
+        </View>
+        {food.items && food.items.length > 0 && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Items</Text>
+            {food.items.map((item: any, idx: number) => (
+              <Text key={idx}>
+                {item.name} - {item.quantity}
+              </Text>
+            ))}
+          </View>
+        )}
+        <View style={styles.section}>
+          <Text>Serving Size: {food.servingSize}</Text>
+          {food.barcode && <Text>Barcode: {food.barcode}</Text>}
+          <Text>Created By: {food.createdById || food.createdBy}</Text>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
