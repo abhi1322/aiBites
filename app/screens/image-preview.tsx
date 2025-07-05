@@ -4,6 +4,8 @@ import {
   getCloudinaryImageUrls,
   uploadToCloudinary,
 } from "@/utils/cloudinary";
+import { useUser } from "@clerk/clerk-expo";
+import axios from "axios";
 import { useMutation } from "convex/react";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
@@ -16,33 +18,57 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { useFoodAnalysis } from "../hooks/useFoodAnalysis";
+import { convertVisionResponseToFoodItem } from "../utils/foodAnalysisUtils";
 
 export default function ImagePreviewScreen() {
   const router = useRouter();
+  const { user } = useUser();
   const { uri } = useLocalSearchParams<{ uri: string }>();
   const screenWidth = Dimensions.get("window").width;
   const screenHeight = Dimensions.get("window").height;
   const createFoodItemMutation = useMutation(api.food.createFoodItem);
+  const addFoodToDailyLogMutation = useMutation(api.food.addFoodToDailyLog);
   const [isLoading, setIsLoading] = useState(false);
+
+  console.log("Vision model", process.env.EXPO_PUBLIC_VISION_API_URL);
+  // Food analysis hook
+  const { analyzeImage, isLoading: isAnalyzing } = useFoodAnalysis();
 
   // Debug configuration on component mount
   useEffect(() => {
     debugCloudinaryConfig();
   }, []);
 
-  // Example food data for demonstration
-  const foodData = {
-    name: "Tandoori chicken",
-    calories: 600,
-    protein: 37,
-    carbs: 12,
-    fat: 33,
-    fiber: 0.5,
-    servingSize: "two pieces",
-    isCustom: true,
-    createdById: "demo-user-id", // TODO: Replace with real user id
-    items: [{ name: "Tandoori chicken", quantity: "two pieces" }],
-  };
+  // Temporary test functions for debugging
+  // const handleTestApi = async () => {
+  //   console.log("🧪 Testing API connection...");
+  //   const result = await runApiTests();
+  //   console.log("Test result:", result);
+  // };
+
+  // const handleNetworkTest = async () => {
+  //   console.log("🌐 Running comprehensive network test...");
+  //   const results = await testNetworkConnectivity();
+  //   console.log("Network test results:", results);
+
+  //   const successCount = results.filter((r) => r.success).length;
+  //   Alert.alert(
+  //     "Network Test Results",
+  //     `${successCount}/${results.length} tests passed\n\nCheck console for details.`,
+  //     [{ text: "OK" }]
+  //   );
+  // };
+
+  // const handleConfigTest = async () => {
+  //   console.log("🔧 Testing different network configurations...");
+  //   await testNetworkConfigurations();
+  // };
+
+  // const handleServerStatus = async () => {
+  //   console.log("🔍 Checking API server status...");
+  //   await checkApiServerStatus();
+  // };
 
   async function handleNext() {
     try {
@@ -64,16 +90,67 @@ export default function ImagePreviewScreen() {
       console.log("originalUrl:", originalUrl);
       console.log("compressedUrl:", compressedUrl);
 
-      // 3. Create food item in backend
-      console.log("Creating food item...");
-      const foodItem = await createFoodItemMutation({
-        ...foodData,
-        imageUrl: originalUrl,
-        compressedImageUrl: compressedUrl,
-      });
+      // // 3. Analyze food image using AI
+      // console.log("Analyzing food image...");
+      // const analysisResult = await analyzeImage(originalUrl);
+
+      // if (!analysisResult) {
+      //   throw new Error("Failed to analyze food image. Please try again.");
+      // }
+
+      // // 4. Convert analysis result to food data with user info
+      // const foodData = convertAnalysisToFoodData(analysisResult);
+
+      const visionResult = await axios
+        .post(`${process.env.EXPO_PUBLIC_VISION_API_URL}/analyze-food`, {
+          image_url: originalUrl,
+        })
+        .then((res) => res.data)
+        .catch((err) => {
+          console.error("Error in vision result:", err);
+          return null;
+        });
+      console.log("Vision result:", visionResult);
+      if (!visionResult) {
+        Alert.alert(
+          "Upload Error",
+          "Failed to analyze food image. Please try again.",
+          [{ text: "OK" }]
+        );
+        return;
+      }
+      // 5. Convert vision response to food item format
+      console.log("User ID from Clerk:", user?.id);
+      const foodItemData = convertVisionResponseToFoodItem(
+        visionResult,
+        originalUrl,
+        compressedUrl,
+        user?.id || "unknown-user",
+        false // Not custom, from vision analysis
+      );
+
+      // 6. Create food item in backend with user data
+      console.log("Creating food item with data:", foodItemData);
+      const foodItem = await createFoodItemMutation(foodItemData);
       console.log("Created foodItem:", foodItem);
 
-      // 4. Navigate to dynamic food detail page
+      // 7. Add food item to today's daily log
+      console.log("Adding to daily log...");
+      const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD format
+      console.log("Today's date:", today);
+      const dailyLogData = {
+        userId: user?.id || "unknown-user",
+        date: today,
+        foodItemId: foodItem,
+        quantity: 1, // Default to 1 serving
+        mealType: "lunch" as const, // Default meal type, could be made configurable
+        notes: "Added via food analysis",
+      };
+      console.log("Daily log data:", dailyLogData);
+      await addFoodToDailyLogMutation(dailyLogData);
+      console.log("Added to daily log");
+
+      // 8. Navigate to dynamic food detail page
       router.push({
         pathname: "/food/[id]",
         params: { id: foodItem.toString() },
@@ -82,7 +159,7 @@ export default function ImagePreviewScreen() {
       console.error("Error in handleNext:", error);
       Alert.alert(
         "Upload Error",
-        `Failed to upload image: ${error instanceof Error ? error.message : "Unknown error"}`,
+        `Failed to process image: ${error instanceof Error ? error.message : "Unknown error"}`,
         [{ text: "OK" }]
       );
     } finally {
@@ -102,23 +179,65 @@ export default function ImagePreviewScreen() {
         <Text style={{ color: "white" }}>No image to preview</Text>
       )}
 
+      {/* Debug Test Buttons (Temporary for debugging) */}
+      {/* <View style={styles.debugButtons}>
+        <TouchableOpacity
+          style={styles.testButton}
+          onPress={handleTestApi}
+          disabled={isLoading || isAnalyzing}
+        >
+          <Text style={styles.buttonText}>Test API</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.testButton}
+          onPress={handleNetworkTest}
+          disabled={isLoading || isAnalyzing}
+        >
+          <Text style={styles.buttonText}>Network</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.testButton}
+          onPress={handleConfigTest}
+          disabled={isLoading || isAnalyzing}
+        >
+          <Text style={styles.buttonText}>Config</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.testButton}
+          onPress={handleServerStatus}
+          disabled={isLoading || isAnalyzing}
+        >
+          <Text style={styles.buttonText}>Status</Text>
+        </TouchableOpacity>
+      </View> */}
+
       {/* Retake Button */}
       <TouchableOpacity
         style={styles.retakeButton}
         onPress={() => router.replace("../(tabs)/camera")}
-        disabled={isLoading}
+        disabled={isLoading || isAnalyzing}
       >
         <Text style={styles.buttonText}>Retake</Text>
       </TouchableOpacity>
 
       {/* Next Button */}
       <TouchableOpacity
-        style={[styles.nextButton, isLoading && styles.disabledButton]}
+        style={[
+          styles.nextButton,
+          (isLoading || isAnalyzing) && styles.disabledButton,
+        ]}
         onPress={handleNext}
-        disabled={isLoading}
+        disabled={isLoading || isAnalyzing}
       >
         <Text style={styles.buttonText}>
-          {isLoading ? "Uploading..." : "Next"}
+          {isLoading || isAnalyzing
+            ? isAnalyzing
+              ? "Analyzing..."
+              : "Uploading..."
+            : "Next"}
         </Text>
       </TouchableOpacity>
     </View>
@@ -131,6 +250,19 @@ const styles = StyleSheet.create({
     backgroundColor: "black",
     justifyContent: "center",
     alignItems: "center",
+  },
+  debugButtons: {
+    position: "absolute",
+    top: 100,
+    flexDirection: "row",
+    gap: 10,
+    zIndex: 20,
+  },
+  testButton: {
+    backgroundColor: "#FF6B6B",
+    paddingHorizontal: 15,
+    paddingVertical: 8,
+    borderRadius: 15,
   },
   retakeButton: {
     position: "absolute",
@@ -157,7 +289,7 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: "white",
-    fontSize: 18,
+    fontSize: 14,
     fontWeight: "bold",
   },
 });

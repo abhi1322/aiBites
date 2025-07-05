@@ -89,7 +89,9 @@ export default function FoodDetailScreen() {
         )}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Calories</Text>
-          <Text style={styles.value}>{food.calories} kcal</Text>
+          <Text style={styles.value}>
+            {food.calories.total} {food.calories.unit}
+          </Text>
         </View>
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Macronutrients</Text>

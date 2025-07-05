@@ -29,20 +29,32 @@ export default defineSchema({
   // Food items table - stores food information
   foodItems: defineTable({
     name: v.string(),
-    calories: v.number(),
+    // Calories as object matching vision model response
+    calories: v.object({
+      total: v.number(), // Model returns <int> as specified
+      unit: v.string(),
+    }),
+    // Macronutrients as object matching vision model response
+    macronutrients: v.object({
+      protein: v.string(), // e.g., "12g"
+      carbs: v.string(), // e.g., "45g"
+      fats: v.string(), // e.g., "10g"
+      fiber: v.string(), // e.g., "5g"
+    }),
+    // Individual nutrient values for calculations (optional)
     protein: v.optional(v.number()), // grams
     carbs: v.optional(v.number()), // grams
     fat: v.optional(v.number()), // grams
     fiber: v.optional(v.number()), // grams
     sugar: v.optional(v.number()), // grams
     sodium: v.optional(v.number()), // mg
-    servingSize: v.optional(v.string()), // e.g., "1 cup", "100g"
+    servingSize: v.string(), // e.g., "1 cup", "100g"
     barcode: v.optional(v.string()), // For packaged foods
-    imageUrl: v.optional(v.string()), // Food image URL
-    compressedImageUrl: v.optional(v.string()), // Compressed image URL
+    imageUrl: v.string(), // Original food image URL
+    compressedImageUrl: v.string(), // Compressed image URL
     isCustom: v.boolean(), // Whether this is a user-created food
-    createdBy: v.optional(v.string()), // Clerk user ID who created this
-    createdById: v.optional(v.string()), // New: explicit user ID
+    createdBy: v.string(), // Clerk user ID who created this
+    createdById: v.string(), // Explicit user ID
     items: v.optional(
       v.array(v.object({ name: v.string(), quantity: v.string() }))
     ),
