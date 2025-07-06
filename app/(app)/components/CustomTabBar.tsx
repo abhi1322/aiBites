@@ -40,8 +40,16 @@ export default function CustomTabBar({
           });
 
           if (!isFocused && !event.defaultPrevented) {
-            navigation.navigate(route.name);
+            // Use the route name for navigation
+            navigation.navigate(route.name as never);
           }
+        };
+
+        const onLongPress = () => {
+          navigation.emit({
+            type: "tabLongPress",
+            target: route.key,
+          });
         };
 
         return (
@@ -50,14 +58,14 @@ export default function CustomTabBar({
             accessibilityRole="button"
             accessibilityState={isFocused ? { selected: true } : {}}
             accessibilityLabel={options.tabBarAccessibilityLabel}
-            // Removed testID={options?.tabBarTestID} because tabBarTestID is not a valid property
             onPress={onPress}
+            onLongPress={onLongPress}
             style={[
               styles.tab,
               isCamera && styles.cameraTab,
               isFocused && !isCamera && styles.focusedTab,
             ]}
-            activeOpacity={0.8}
+            activeOpacity={0.7}
           >
             <Icon
               color={isCamera ? "#fff" : isFocused ? "#07a" : "#000"}
@@ -85,12 +93,14 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-around",
     paddingBottom: 10,
+    paddingHorizontal: 10,
   },
   tab: {
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
     paddingVertical: 8,
+    minHeight: 50,
   },
   label: {
     fontSize: 12,
@@ -101,7 +111,9 @@ const styles = StyleSheet.create({
     color: "#07a",
     fontWeight: "bold",
   },
-  focusedTab: {},
+  focusedTab: {
+    // Add any focused tab styling here
+  },
   cameraTab: {
     backgroundColor: "#000",
     borderRadius: 40,

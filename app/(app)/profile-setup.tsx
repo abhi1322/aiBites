@@ -91,6 +91,10 @@ export default function ProfileSetupScreen() {
     }
   };
 
+  // Check if current step needs full height (height/weight steps)
+  const needsFullHeight =
+    currentStep === STEPS.HEIGHT || currentStep === STEPS.WEIGHT;
+
   return (
     <SafeAreaView className="flex-1 bg-white">
       <KeyboardAvoidingView
@@ -101,16 +105,24 @@ export default function ProfileSetupScreen() {
         {/* Progress Bar */}
         <ProgressBar currentStep={currentStep} />
 
-        <ScrollView
-          className="flex-1 px-6"
-          showsVerticalScrollIndicator={false}
-          keyboardShouldPersistTaps="always"
-          keyboardDismissMode="on-drag"
-          contentContainerStyle={{ paddingBottom: 40 }}
-        >
-          {/* Step Content */}
-          <View className="pt-6">{renderCurrentStep()}</View>
-        </ScrollView>
+        {needsFullHeight ? (
+          // Full height layout for height/weight steps
+          <View className="flex-1 px-6">
+            <View className="flex-1 pt-6">{renderCurrentStep()}</View>
+          </View>
+        ) : (
+          // Scrollable layout for other steps
+          <ScrollView
+            className="flex-1 px-6"
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="always"
+            keyboardDismissMode="on-drag"
+            contentContainerStyle={{ paddingBottom: 40 }}
+          >
+            {/* Step Content */}
+            <View className="pt-6">{renderCurrentStep()}</View>
+          </ScrollView>
+        )}
 
         {/* Navigation Buttons */}
         <StepNavigation

@@ -1,28 +1,41 @@
 import { useRouter } from "expo-router";
-import { ArrowLeft, Bell, ToggleLeft } from "lucide-react-native";
-import { useState } from "react";
-import {
-  ScrollView,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { ArrowLeft, Clock } from "lucide-react-native";
+import { Alert, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { useNotifications } from "../../hooks/useNotifications";
 
 export default function NotificationsScreen() {
   const router = useRouter();
-  const [notifications, setNotifications] = useState({
-    dailyReminders: true,
-    mealTracking: true,
-    goalAchievements: true,
-    weeklyReports: false,
-    tipsAndAdvice: true,
-  });
+  const {
+    settings,
+    loading,
+    toggleNotificationType,
+    updateMealTime,
+    sendTestNotification,
+  } = useNotifications();
 
-  const toggleNotification = (key: keyof typeof notifications) => {
-    setNotifications(prev => ({
-      ...prev,
-      [key]: !prev[key]
-    }));
+  const showTimePicker = (mealType: keyof typeof settings.mealTimes) => {
+    Alert.alert(
+      `Set ${mealType} time`,
+      "Choose a time for your meal reminder",
+      [
+        { text: "Cancel", style: "cancel" },
+        { text: "7:00 AM", onPress: () => updateMealTime(mealType, "07:00") },
+        { text: "8:00 AM", onPress: () => updateMealTime(mealType, "08:00") },
+        { text: "9:00 AM", onPress: () => updateMealTime(mealType, "09:00") },
+        { text: "12:00 PM", onPress: () => updateMealTime(mealType, "12:00") },
+        { text: "1:00 PM", onPress: () => updateMealTime(mealType, "13:00") },
+        { text: "6:00 PM", onPress: () => updateMealTime(mealType, "18:00") },
+        { text: "7:00 PM", onPress: () => updateMealTime(mealType, "19:00") },
+        { text: "8:00 PM", onPress: () => updateMealTime(mealType, "20:00") },
+      ]
+    );
+  };
+
+  const formatTime = (time: string) => {
+    const [hours, minutes] = time.split(":").map(Number);
+    const period = hours >= 12 ? "PM" : "AM";
+    const displayHours = hours % 12 || 12;
+    return `${displayHours}:${minutes.toString().padStart(2, "0")} ${period}`;
   };
 
   return (
@@ -43,52 +56,158 @@ export default function NotificationsScreen() {
       </View>
 
       <ScrollView className="flex-1 px-4 pt-6">
-        {/* Notification Types */}
+        {/* Permission Status */}
+        {!settings.enabled && (
+          <View className="bg-red-50 p-4 rounded-lg mb-6">
+            <Text className="text-sm text-red-800">
+              Notifications are disabled. Please enable them in your device
+              settings to receive calorie tracking reminders.
+            </Text>
+          </View>
+        )}
+
+        {/* Meal Reminders */}
         <View className="bg-white rounded-lg p-6 mb-6">
           <Text className="text-lg font-semibold text-gray-900 mb-4">
-            Notification Types
+            Meal Reminders
           </Text>
-          
+          <Text className="text-sm text-gray-500 mb-4">
+            Get reminded to log your meals at specific times
+          </Text>
+
           <View className="space-y-4">
             <View className="flex-row items-center justify-between">
               <View className="flex-1">
                 <Text className="text-base font-medium text-gray-900">
-                  Daily Reminders
+                  Breakfast
                 </Text>
                 <Text className="text-sm text-gray-500">
-                  Remind me to log my meals
+                  Start your day with proper nutrition tracking
                 </Text>
               </View>
               <TouchableOpacity
-                onPress={() => toggleNotification('dailyReminders')}
-                className={`w-12 h-6 rounded-full ${
-                  notifications.dailyReminders ? 'bg-blue-500' : 'bg-gray-300'
-                }`}
+                onPress={() => showTimePicker("breakfast")}
+                className="flex-row items-center bg-blue-50 px-3 py-2 rounded-lg"
               >
-                <View className={`w-5 h-5 rounded-full bg-white mt-0.5 ml-0.5 ${
-                  notifications.dailyReminders ? 'ml-6' : 'ml-0.5'
-                }`} />
+                <Clock size={16} color="#3B82F6" />
+                <Text className="text-blue-600 font-medium ml-1">
+                  {formatTime(settings.mealTimes.breakfast)}
+                </Text>
               </TouchableOpacity>
             </View>
 
             <View className="flex-row items-center justify-between">
               <View className="flex-1">
                 <Text className="text-base font-medium text-gray-900">
-                  Meal Tracking
+                  Lunch
                 </Text>
                 <Text className="text-sm text-gray-500">
-                  Notify when meals are logged
+                  Keep track of your midday nutrition
                 </Text>
               </View>
               <TouchableOpacity
-                onPress={() => toggleNotification('mealTracking')}
+                onPress={() => showTimePicker("lunch")}
+                className="flex-row items-center bg-blue-50 px-3 py-2 rounded-lg"
+              >
+                <Clock size={16} color="#3B82F6" />
+                <Text className="text-blue-600 font-medium ml-1">
+                  {formatTime(settings.mealTimes.lunch)}
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            <View className="flex-row items-center justify-between">
+              <View className="flex-1">
+                <Text className="text-base font-medium text-gray-900">
+                  Dinner
+                </Text>
+                <Text className="text-sm text-gray-500">
+                  Complete your daily nutrition log
+                </Text>
+              </View>
+              <TouchableOpacity
+                onPress={() => showTimePicker("dinner")}
+                className="flex-row items-center bg-blue-50 px-3 py-2 rounded-lg"
+              >
+                <Clock size={16} color="#3B82F6" />
+                <Text className="text-blue-600 font-medium ml-1">
+                  {formatTime(settings.mealTimes.dinner)}
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            <View className="flex-row items-center justify-between">
+              <View className="flex-1">
+                <Text className="text-base font-medium text-gray-900">
+                  Snack
+                </Text>
+                <Text className="text-sm text-gray-500">
+                  Don't forget those in-between snacks
+                </Text>
+              </View>
+              <TouchableOpacity
+                onPress={() => showTimePicker("snack")}
+                className="flex-row items-center bg-blue-50 px-3 py-2 rounded-lg"
+              >
+                <Clock size={16} color="#3B82F6" />
+                <Text className="text-blue-600 font-medium ml-1">
+                  {formatTime(settings.mealTimes.snack)}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+
+        {/* Notification Types */}
+        <View className="bg-white rounded-lg p-6 mb-6">
+          <Text className="text-lg font-semibold text-gray-900 mb-4">
+            Notification Types
+          </Text>
+
+          <View className="space-y-4">
+            <View className="flex-row items-center justify-between">
+              <View className="flex-1">
+                <Text className="text-base font-medium text-gray-900">
+                  Meal Tracking
+                </Text>
+                <Text className="text-sm text-gray-500">
+                  Enable meal-specific reminders
+                </Text>
+              </View>
+              <TouchableOpacity
+                onPress={() => toggleNotificationType("mealTracking")}
                 className={`w-12 h-6 rounded-full ${
-                  notifications.mealTracking ? 'bg-blue-500' : 'bg-gray-300'
+                  settings.mealTracking ? "bg-blue-500" : "bg-gray-300"
                 }`}
               >
-                <View className={`w-5 h-5 rounded-full bg-white mt-0.5 ml-0.5 ${
-                  notifications.mealTracking ? 'ml-6' : 'ml-0.5'
-                }`} />
+                <View
+                  className={`w-5 h-5 rounded-full bg-white mt-0.5 ml-0.5 ${
+                    settings.mealTracking ? "ml-6" : "ml-0.5"
+                  }`}
+                />
+              </TouchableOpacity>
+            </View>
+
+            <View className="flex-row items-center justify-between">
+              <View className="flex-1">
+                <Text className="text-base font-medium text-gray-900">
+                  Daily Check-in
+                </Text>
+                <Text className="text-sm text-gray-500">
+                  Evening reminder to review your day
+                </Text>
+              </View>
+              <TouchableOpacity
+                onPress={() => toggleNotificationType("dailyReminders")}
+                className={`w-12 h-6 rounded-full ${
+                  settings.dailyReminders ? "bg-blue-500" : "bg-gray-300"
+                }`}
+              >
+                <View
+                  className={`w-5 h-5 rounded-full bg-white mt-0.5 ml-0.5 ${
+                    settings.dailyReminders ? "ml-6" : "ml-0.5"
+                  }`}
+                />
               </TouchableOpacity>
             </View>
 
@@ -98,18 +217,20 @@ export default function NotificationsScreen() {
                   Goal Achievements
                 </Text>
                 <Text className="text-sm text-gray-500">
-                  Celebrate when you reach goals
+                  Celebrate when you reach calorie goals
                 </Text>
               </View>
               <TouchableOpacity
-                onPress={() => toggleNotification('goalAchievements')}
+                onPress={() => toggleNotificationType("goalAchievements")}
                 className={`w-12 h-6 rounded-full ${
-                  notifications.goalAchievements ? 'bg-blue-500' : 'bg-gray-300'
+                  settings.goalAchievements ? "bg-blue-500" : "bg-gray-300"
                 }`}
               >
-                <View className={`w-5 h-5 rounded-full bg-white mt-0.5 ml-0.5 ${
-                  notifications.goalAchievements ? 'ml-6' : 'ml-0.5'
-                }`} />
+                <View
+                  className={`w-5 h-5 rounded-full bg-white mt-0.5 ml-0.5 ${
+                    settings.goalAchievements ? "ml-6" : "ml-0.5"
+                  }`}
+                />
               </TouchableOpacity>
             </View>
 
@@ -123,14 +244,16 @@ export default function NotificationsScreen() {
                 </Text>
               </View>
               <TouchableOpacity
-                onPress={() => toggleNotification('weeklyReports')}
+                onPress={() => toggleNotificationType("weeklyReports")}
                 className={`w-12 h-6 rounded-full ${
-                  notifications.weeklyReports ? 'bg-blue-500' : 'bg-gray-300'
+                  settings.weeklyReports ? "bg-blue-500" : "bg-gray-300"
                 }`}
               >
-                <View className={`w-5 h-5 rounded-full bg-white mt-0.5 ml-0.5 ${
-                  notifications.weeklyReports ? 'ml-6' : 'ml-0.5'
-                }`} />
+                <View
+                  className={`w-5 h-5 rounded-full bg-white mt-0.5 ml-0.5 ${
+                    settings.weeklyReports ? "ml-6" : "ml-0.5"
+                  }`}
+                />
               </TouchableOpacity>
             </View>
 
@@ -144,48 +267,39 @@ export default function NotificationsScreen() {
                 </Text>
               </View>
               <TouchableOpacity
-                onPress={() => toggleNotification('tipsAndAdvice')}
+                onPress={() => toggleNotificationType("tipsAndAdvice")}
                 className={`w-12 h-6 rounded-full ${
-                  notifications.tipsAndAdvice ? 'bg-blue-500' : 'bg-gray-300'
+                  settings.tipsAndAdvice ? "bg-blue-500" : "bg-gray-300"
                 }`}
               >
-                <View className={`w-5 h-5 rounded-full bg-white mt-0.5 ml-0.5 ${
-                  notifications.tipsAndAdvice ? 'ml-6' : 'ml-0.5'
-                }`} />
+                <View
+                  className={`w-5 h-5 rounded-full bg-white mt-0.5 ml-0.5 ${
+                    settings.tipsAndAdvice ? "ml-6" : "ml-0.5"
+                  }`}
+                />
               </TouchableOpacity>
             </View>
           </View>
         </View>
 
-        {/* Notification Schedule */}
+        {/* Test Notification */}
         <View className="bg-white rounded-lg p-6 mb-6">
           <Text className="text-lg font-semibold text-gray-900 mb-4">
-            Notification Schedule
+            Test Notifications
           </Text>
-          
-          <TouchableOpacity className="flex-row items-center justify-between py-3 border-b border-gray-100">
-            <View>
-              <Text className="text-base font-medium text-gray-900">
-                Reminder Time
-              </Text>
-              <Text className="text-sm text-gray-500">
-                Set when to receive daily reminders
-              </Text>
-            </View>
-            <Text className="text-blue-500">8:00 AM</Text>
+
+          <TouchableOpacity
+            onPress={sendTestNotification}
+            className="bg-blue-500 py-3 px-4 rounded-lg items-center"
+          >
+            <Text className="text-white font-medium">
+              Send Test Notification
+            </Text>
           </TouchableOpacity>
 
-          <TouchableOpacity className="flex-row items-center justify-between py-3">
-            <View>
-              <Text className="text-base font-medium text-gray-900">
-                Quiet Hours
-              </Text>
-              <Text className="text-sm text-gray-500">
-                Don't disturb during these hours
-              </Text>
-            </View>
-            <Text className="text-blue-500">10:00 PM - 7:00 AM</Text>
-          </TouchableOpacity>
+          <Text className="text-sm text-gray-500 mt-2">
+            Test if notifications are working properly
+          </Text>
         </View>
 
         {/* App Permissions */}
@@ -193,14 +307,15 @@ export default function NotificationsScreen() {
           <Text className="text-lg font-semibold text-gray-900 mb-4">
             App Permissions
           </Text>
-          
+
           <View className="bg-blue-50 p-4 rounded-lg">
             <Text className="text-sm text-blue-800">
-              Make sure notifications are enabled in your device settings to receive all notifications from AIBite.
+              Make sure notifications are enabled in your device settings to
+              receive all notifications from AIBite.
             </Text>
           </View>
         </View>
       </ScrollView>
     </View>
   );
-} 
+}

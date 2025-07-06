@@ -1,10 +1,11 @@
 import CalendarStripComponent from "@/app/components/CalendarStripComponent";
 import CircularNutritionSummary from "@/app/components/CircularNutritionSummary";
 import FoodItemsCard from "@/app/components/FoodItemsCard";
+import NotificationStatus from "@/app/components/NotificationStatus";
 import { useUser } from "@clerk/clerk-expo";
 import axios from "axios";
 import { useQuery } from "convex/react";
-import { Redirect } from "expo-router";
+import { Redirect, useRouter } from "expo-router";
 import moment from "moment";
 import { useEffect, useState } from "react";
 import { ScrollView, Text, View } from "react-native";
@@ -14,6 +15,7 @@ import { api } from "../../../convex/_generated/api"; // Adjust the path as need
 export default function HomeScreen() {
   const [selectedDate, setSelectedDate] = useState(moment());
   const { user } = useUser();
+  const router = useRouter();
 
   useEffect(() => {
     console.log("API URL:", process.env.EXPO_PUBLIC_VISION_API_URL);
@@ -34,6 +36,10 @@ export default function HomeScreen() {
 
   const handleDateChange = (date: moment.Moment) => {
     setSelectedDate(date);
+  };
+
+  const handleNotificationSettings = () => {
+    router.push("/(app)/settings/notifications");
   };
 
   // check the user data from the database
@@ -62,6 +68,9 @@ export default function HomeScreen() {
         <Text className="text-2xl font-bold">
           Welcome, {userData?.firstName}
         </Text>
+
+        {/* Notification Status */}
+        <NotificationStatus onPressSettings={handleNotificationSettings} />
 
         {/* Food Items for Selected Date */}
         {clerkID && (

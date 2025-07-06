@@ -4,18 +4,25 @@ import { Tabs } from "expo-router";
 import { Camera, Home, User } from "lucide-react-native";
 import React from "react";
 import { TouchableOpacity } from "react-native";
-import CustomTabBar from "../components/CustomTabBar";
 
 export default function TabsLayout() {
   return (
     <Tabs
-      tabBar={(props) => <CustomTabBar {...props} />}
-      screenOptions={{
+      screenOptions={({ route }) => ({
         headerShown: false,
         tabBarStyle: {
           position: "relative",
+          height: 70,
+          backgroundColor: "#fff",
+          borderTopWidth: 1,
+          borderTopColor: "#eee",
+          paddingBottom: 10,
+          // Hide tab bar when camera is focused
+          display: route.name === "camera" ? "none" : "flex",
         },
-      }}
+        tabBarActiveTintColor: "#07a",
+        tabBarInactiveTintColor: "#000",
+      })}
     >
       <Tabs.Screen
         name="home"
@@ -24,8 +31,6 @@ export default function TabsLayout() {
           title: "Home",
           tabBarLabel: "Home",
           tabBarIcon: ({ color, size }) => <Home color={color} size={size} />,
-          tabBarActiveTintColor: "#07a",
-          tabBarInactiveTintColor: "#000",
         }}
       />
       <Tabs.Screen
@@ -37,39 +42,31 @@ export default function TabsLayout() {
           tabBarIcon: ({ color, size }) => (
             <Camera color={"#fff"} size={size} />
           ),
-          tabBarActiveTintColor: "#fff",
-          tabBarInactiveTintColor: "#f7f2f2",
-          tabBarLabelStyle: {
-            color: "#fff",
-          },
-          tabBarButton: ({ children, disabled, onPress, ...props }) => {
-            const filteredProps = Object.fromEntries(
-              Object.entries(props).filter(([_, v]) => v !== null)
-            );
-            return (
-              <TouchableOpacity
-                {...filteredProps}
-                disabled={!!disabled}
-                delayLongPress={0}
-                activeOpacity={1}
-                onPress={onPress}
-                style={{
-                  position: "absolute",
-                  flex: 1,
-                  justifyContent: "center",
-                  alignItems: "center",
-                  top: 0,
-                  right: "50%",
-                  transform: [{ translateX: 50 }, { translateY: -50 }],
-                  backgroundColor: "#000",
-                  padding: 20,
-                  borderRadius: 100,
-                }}
-              >
-                {children}
-              </TouchableOpacity>
-            );
-          },
+          tabBarButton: ({ children, onPress, ...props }) => (
+            <TouchableOpacity
+              {...props}
+              onPress={onPress}
+              style={{
+                position: "absolute",
+                bottom: 0,
+                left: "50%",
+                transform: [{ translateX: -30 }],
+                backgroundColor: "#000",
+                width: 60,
+                height: 60,
+                borderRadius: 30,
+                justifyContent: "center",
+                alignItems: "center",
+                shadowColor: "#000",
+                shadowOpacity: 0.2,
+                shadowRadius: 8,
+                shadowOffset: { width: 0, height: 2 },
+                elevation: 5,
+              }}
+            >
+              {children}
+            </TouchableOpacity>
+          ),
         }}
       />
       <Tabs.Screen
@@ -77,9 +74,8 @@ export default function TabsLayout() {
         options={{
           headerShown: false,
           title: "Profile",
+          tabBarLabel: "Profile",
           tabBarIcon: ({ color, size }) => <User color={color} size={size} />,
-          tabBarActiveTintColor: "#07a",
-          tabBarInactiveTintColor: "#000",
         }}
       />
     </Tabs>

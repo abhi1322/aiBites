@@ -219,6 +219,7 @@ export const useProfileSetup = () => {
       Alert.alert("Error", "Failed to update profile. Please try again.");
     } finally {
       setIsLoading(false);
+      // Redirect to app index which will handle routing based on profile completion
       router.replace("/(app)");
     }
   };

@@ -17,9 +17,9 @@ export default function Index() {
     );
   }
 
-  // If user is signed in, redirect to home
+  // If user is signed in, redirect to app
   if (user) {
-    return <Redirect href="/(app)/(tabs)/home" />;
+    return <Redirect href="/(app)" />;
   }
 
   // If user is not signed in, redirect to sign-in
