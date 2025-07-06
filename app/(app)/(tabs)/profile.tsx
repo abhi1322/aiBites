@@ -66,13 +66,13 @@ export default function ProfileScreen() {
           icon: <User size={20} color="#6b7280" />,
           title: "Edit Profile",
           subtitle: "Update your personal information",
-          onPress: () => router.push("/(app)/profile-setup"),
+          onPress: () => router.push("/(app)/settings/edit-profile"),
         },
         {
           icon: <Target size={20} color="#6b7280" />,
           title: "Nutrition Goals",
           subtitle: "Set your daily targets",
-          onPress: () => router.push("/(app)/profile-setup"),
+          onPress: () => router.push("/(app)/settings/nutrition-goals"),
         },
         {
           icon: <Camera size={20} color="#6b7280" />,
@@ -89,31 +89,19 @@ export default function ProfileScreen() {
           icon: <Bell size={20} color="#6b7280" />,
           title: "Notifications",
           subtitle: "Manage your notifications",
-          onPress: () =>
-            Alert.alert(
-              "Coming Soon",
-              "Notifications settings will be available soon!"
-            ),
+          onPress: () => router.push("/(app)/settings/notifications"),
         },
         {
           icon: <BarChart3 size={20} color="#6b7280" />,
           title: "Data & Privacy",
           subtitle: "Control your data settings",
-          onPress: () =>
-            Alert.alert(
-              "Coming Soon",
-              "Privacy settings will be available soon!"
-            ),
+          onPress: () => router.push("/(app)/settings/data-privacy"),
         },
         {
           icon: <Heart size={20} color="#6b7280" />,
           title: "Health Insights",
           subtitle: "View your nutrition trends",
-          onPress: () =>
-            Alert.alert(
-              "Coming Soon",
-              "Health insights will be available soon!"
-            ),
+          onPress: () => router.push("/(app)/settings/health-insights"),
         },
       ],
     },
@@ -124,18 +112,13 @@ export default function ProfileScreen() {
           icon: <HelpCircle size={20} color="#6b7280" />,
           title: "Help & Support",
           subtitle: "Get help with the app",
-          onPress: () =>
-            Alert.alert("Support", "Contact us at support@aibite.com"),
+          onPress: () => router.push("/(app)/settings/help-support"),
         },
         {
           icon: <Shield size={20} color="#6b7280" />,
           title: "Privacy Policy",
           subtitle: "Read our privacy policy",
-          onPress: () =>
-            Alert.alert(
-              "Privacy Policy",
-              "Privacy policy will be available soon!"
-            ),
+          onPress: () => router.push("/(app)/settings/privacy-policy"),
         },
       ],
     },

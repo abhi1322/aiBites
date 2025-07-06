@@ -1,6 +1,6 @@
 import { useOAuth, useSignIn, useUser } from "@clerk/clerk-expo";
 import { Link, useRouter } from "expo-router";
-import React, { useCallback, useEffect } from "react";
+import React, { useCallback } from "react";
 import {
   Alert,
   KeyboardAvoidingView,
@@ -34,12 +34,12 @@ export default function SignInScreen() {
     strategy: "oauth_apple",
   });
 
-  // check is user is already logged in
-  useEffect(() => {
-    if (user) {
-      router.replace("../../(app)/(tabs)/home");
-    }
-  }, [user]);
+  // Remove automatic redirect - let app layout handle it
+  // useEffect(() => {
+  //   if (user) {
+  //     router.replace("../../(app)/(tabs)/home");
+  //   }
+  // }, [user]);
 
   const onSignInPress = async () => {
     if (!isLoaded) return;
@@ -58,7 +58,8 @@ export default function SignInScreen() {
 
       if (signInAttempt.status === "complete") {
         await setActive({ session: signInAttempt.createdSessionId });
-        router.replace("../../(app)/(tabs)/home");
+        // Let app layout handle redirect based on profile completion
+        router.replace("../(app)");
       } else {
         console.error(JSON.stringify(signInAttempt, null, 2));
         Alert.alert("Error", "Sign in failed. Please try again.");
@@ -77,7 +78,8 @@ export default function SignInScreen() {
 
       if (createdSessionId && setActive) {
         setActive({ session: createdSessionId });
-        router.replace("../../(app)/(tabs)/home");
+        // Let app layout handle redirect based on profile completion
+        router.replace("../(app)");
       }
     } catch (err) {
       console.error("OAuth error", err);
@@ -91,7 +93,8 @@ export default function SignInScreen() {
 
       if (createdSessionId && setActive) {
         setActive({ session: createdSessionId });
-        router.replace("../../(app)/(tabs)/home");
+        // Let app layout handle redirect based on profile completion
+        router.replace("../(app)");
       }
     } catch (err) {
       console.error("OAuth error", err);

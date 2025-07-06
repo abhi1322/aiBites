@@ -219,7 +219,7 @@ export const useProfileSetup = () => {
       Alert.alert("Error", "Failed to update profile. Please try again.");
     } finally {
       setIsLoading(false);
-      router.replace("../(app)/(tabs)/home");
+      router.replace("/(app)");
     }
   };
 

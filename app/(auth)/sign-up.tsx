@@ -13,6 +13,7 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import OTPInput from "../components/OTPInput";
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -25,6 +26,7 @@ export default function SignUpScreen() {
   const [loading, setLoading] = React.useState(false);
   const [pendingVerification, setPendingVerification] = React.useState(false);
   const [code, setCode] = React.useState("");
+  const [otpError, setOtpError] = React.useState(false);
 
   // OAuth hooks
   const { startOAuthFlow: startGoogleOAuthFlow } = useOAuth({
@@ -56,7 +58,8 @@ export default function SignUpScreen() {
       if (signUpAttempt.status === "complete") {
         console.log("Sign-up completed successfully");
         await setActive({ session: signUpAttempt.createdSessionId });
-        router.replace("../../(app)/(tabs)/home");
+        // Redirect to profile setup for new users
+        router.replace("../(app)/profile-setup");
       } else if (signUpAttempt.status === "missing_requirements") {
         console.log("Missing requirements, preparing email verification...");
         // Prepare email verification before showing verification screen
@@ -89,11 +92,12 @@ export default function SignUpScreen() {
   const onVerifyPress = async () => {
     if (!isLoaded) return;
 
-    if (!code.trim()) {
-      Alert.alert("Error", "Please enter the verification code");
+    if (!code.trim() || code.length !== 6) {
+      setOtpError(true);
       return;
     }
 
+    setOtpError(false);
     setLoading(true);
     try {
       console.log("Attempting email verification with code:", code);
@@ -110,14 +114,15 @@ export default function SignUpScreen() {
       if (signUpAttempt.status === "complete") {
         console.log("Verification completed successfully");
         await setActive({ session: signUpAttempt.createdSessionId });
-        router.replace("../../(app)/(tabs)/home");
+        // Redirect to profile setup for new users
+        router.replace("../(app)/profile-setup");
       } else {
         console.error("Verification failed with status:", signUpAttempt.status);
-        Alert.alert("Error", "Verification failed. Please try again.");
+        setOtpError(true);
       }
     } catch (err) {
       console.error("Verification error:", JSON.stringify(err, null, 2));
-      Alert.alert("Error", "Invalid verification code. Please try again.");
+      setOtpError(true);
     } finally {
       setLoading(false);
     }
@@ -129,6 +134,8 @@ export default function SignUpScreen() {
     try {
       console.log("Resending verification code...");
       await signUp.prepareEmailAddressVerification();
+      setOtpError(false);
+      setCode("");
       Alert.alert("Success", "Verification code resent to your email");
     } catch (err) {
       console.error("Resend error:", JSON.stringify(err, null, 2));
@@ -145,7 +152,8 @@ export default function SignUpScreen() {
 
       if (createdSessionId && setActive) {
         setActive({ session: createdSessionId });
-        router.replace("../../(app)/(tabs)/home");
+        // Let app layout handle redirect based on profile completion
+        router.replace("../(app)");
       }
     } catch (err) {
       console.error("OAuth error", err);
@@ -159,7 +167,8 @@ export default function SignUpScreen() {
 
       if (createdSessionId && setActive) {
         setActive({ session: createdSessionId });
-        router.replace("../../(app)/(tabs)/home");
+        // Let app layout handle redirect based on profile completion
+        router.replace("../(app)");
       }
     } catch (err) {
       console.error("OAuth error", err);
@@ -182,46 +191,49 @@ export default function SignUpScreen() {
             keyboardShouldPersistTaps="handled"
           >
             <View className="flex-1 items-center justify-center px-6 py-8">
-              <View className="w-full max-w-sm gap-4">
+              <View className="w-full max-w-sm gap-6">
                 <View className="text-center">
                   <Text className="text-3xl font-bold text-gray-900 mb-2">
                     Verify Your Email
                   </Text>
                   <Text className="text-gray-600">
-                    Enter the verification code sent to your email
+                    Enter the 6-digit code sent to your email
                   </Text>
                 </View>
 
-                <View className="gap-4">
-                  <TextInput
-                    value={code}
-                    placeholder="Enter verification code"
-                    onChangeText={(code) => setCode(code)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg text-base"
-                    keyboardType="numeric"
-                    returnKeyType="done"
-                    blurOnSubmit={true}
-                  />
+                <OTPInput
+                  length={6}
+                  value={code}
+                  onChange={setCode}
+                  error={otpError}
+                  disabled={loading}
+                />
 
-                  <TouchableOpacity
-                    onPress={onVerifyPress}
-                    disabled={loading}
-                    className={`w-full py-3 rounded-lg ${loading ? "bg-gray-400" : "bg-blue-600"}`}
-                  >
-                    <Text className="text-white text-center font-semibold text-base">
-                      {loading ? "Verifying..." : "Verify Email"}
-                    </Text>
-                  </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={onVerifyPress}
+                  disabled={loading || code.length !== 6}
+                  className={`w-full py-3 rounded-lg ${
+                    loading || code.length !== 6 ? "bg-gray-400" : "bg-blue-600"
+                  }`}
+                >
+                  <Text className="text-white text-center font-semibold text-base">
+                    {loading ? "Verifying..." : "Verify Email"}
+                  </Text>
+                </TouchableOpacity>
 
-                  <TouchableOpacity
-                    onPress={onResendCode}
-                    className="w-full py-2"
+                <TouchableOpacity
+                  onPress={onResendCode}
+                  disabled={loading}
+                  className="w-full py-2"
+                >
+                  <Text
+                    className={`text-center text-sm ${
+                      loading ? "text-gray-400" : "text-blue-600"
+                    }`}
                   >
-                    <Text className="text-blue-600 text-center text-sm">
-                      Didn&apos;t receive the code? Resend
-                    </Text>
-                  </TouchableOpacity>
-                </View>
+                    Didn&apos;t receive the code? Resend
+                  </Text>
+                </TouchableOpacity>
               </View>
             </View>
           </ScrollView>
