@@ -50,7 +50,18 @@ export default function HomeScreen() {
     user?.id ? { clerkId: user.id } : "skip"
   );
 
-  if (!user) return <Redirect href="/sign-in" />; // or a loading state
+  // NEW: Check if profile is complete
+  const isProfileComplete = useQuery(
+    api.users.isProfileComplete,
+    user?.id ? { clerkId: user.id } : "skip"
+  );
+
+  if (!user) return <Redirect href="/sign-in" />;
+
+  // If profile is not complete, redirect to profile setup
+  if (isProfileComplete === false) {
+    return <Redirect href="/profile-setup" />;
+  }
 
   const clerkID = userData?.clerkId;
 

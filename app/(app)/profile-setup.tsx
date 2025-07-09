@@ -11,7 +11,9 @@ import {
   STEPS,
   WeightStep,
 } from "../components/profile-setup";
+import { STEP_KEYS } from "../components/profile-setup/ProgressBar";
 import { useProfileSetup } from "../hooks/useProfileSetup";
+// e.g. STEP_KEYS.HEIGHT
 
 type StepType = (typeof STEPS)[keyof typeof STEPS];
 
@@ -37,7 +39,7 @@ export default function ProfileSetupScreen() {
   // Render current step
   const renderCurrentStep = () => {
     switch (currentStep) {
-      case STEPS.BASIC_INFO:
+      case STEP_KEYS.BASIC_INFO:
         return (
           <BasicInfoStep
             profileData={profileData}
@@ -47,21 +49,21 @@ export default function ProfileSetupScreen() {
             formatDate={formatDate}
           />
         );
-      case STEPS.HEIGHT:
+      case STEP_KEYS.HEIGHT:
         return (
           <HeightStep
             height={profileData.height}
             updateHeight={(height) => updateProfileData({ height })}
           />
         );
-      case STEPS.WEIGHT:
+      case STEP_KEYS.WEIGHT:
         return (
           <WeightStep
             weight={profileData.weight}
             updateWeight={(weight) => updateProfileData({ weight })}
           />
         );
-      case STEPS.NUTRITION:
+      case STEP_KEYS.NUTRITION:
         return (
           <NutritionStep
             calorieGoal={profileData.calorieGoal}
@@ -93,7 +95,7 @@ export default function ProfileSetupScreen() {
 
   // Check if current step needs full height (height/weight steps)
   const needsFullHeight =
-    currentStep === STEPS.HEIGHT || currentStep === STEPS.WEIGHT;
+    currentStep === STEP_KEYS.HEIGHT || currentStep === STEP_KEYS.WEIGHT;
 
   return (
     <SafeAreaView className="flex-1 bg-white">
