@@ -1,9 +1,11 @@
 import { useOAuth, useSignUp } from "@clerk/clerk-expo";
+import Ionicons from "@expo/vector-icons/Ionicons";
 import { Link, useRouter } from "expo-router";
 import * as WebBrowser from "expo-web-browser";
-import React, { useCallback } from "react";
+import React, { useCallback, useState } from "react";
 import {
   Alert,
+  Image,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -13,7 +15,10 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { AppText } from "../components/AppText";
 import OTPInput from "../components/OTPInput";
+import { DarkButton, LightButton } from "../components/ui/Button";
+import DashedSeparator from "../components/ui/DashedSeparator";
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -21,12 +26,13 @@ export default function SignUpScreen() {
   const { signUp, setActive, isLoaded } = useSignUp();
   const router = useRouter();
 
-  const [emailAddress, setEmailAddress] = React.useState("");
-  const [password, setPassword] = React.useState("");
-  const [loading, setLoading] = React.useState(false);
-  const [pendingVerification, setPendingVerification] = React.useState(false);
-  const [code, setCode] = React.useState("");
-  const [otpError, setOtpError] = React.useState(false);
+  const [emailAddress, setEmailAddress] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [pendingVerification, setPendingVerification] = useState(false);
+  const [code, setCode] = useState("");
+  const [otpError, setOtpError] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   // OAuth hooks
   const { startOAuthFlow: startGoogleOAuthFlow } = useOAuth({
@@ -46,45 +52,39 @@ export default function SignUpScreen() {
 
     setLoading(true);
     try {
-      console.log("Starting sign-up process...");
       const signUpAttempt = await signUp.create({
         emailAddress,
         password,
       });
 
-      console.log("Sign-up attempt status:", signUpAttempt.status);
-      console.log("Sign-up attempt:", JSON.stringify(signUpAttempt, null, 2));
-
       if (signUpAttempt.status === "complete") {
-        console.log("Sign-up completed successfully");
         await setActive({ session: signUpAttempt.createdSessionId });
-        // Redirect to profile setup for new users
         router.replace("../(app)/profile-setup");
       } else if (signUpAttempt.status === "missing_requirements") {
-        console.log("Missing requirements, preparing email verification...");
-        // Prepare email verification before showing verification screen
         try {
           await signUp.prepareEmailAddressVerification();
-          console.log("Email verification prepared successfully");
           setPendingVerification(true);
         } catch (verificationError) {
-          console.error(
-            "Failed to prepare email verification:",
-            verificationError
-          );
           Alert.alert(
             "Error",
             "Failed to send verification code. Please try again."
           );
         }
       } else {
-        console.error("Unexpected sign-up status:", signUpAttempt.status);
         Alert.alert("Error", "Sign up failed. Please try again.");
       }
     } catch (err) {
-      console.error("Sign-up error:", JSON.stringify(err, null, 2));
-      Alert.alert("Error", "Failed to create account. Please try again.");
-    } finally {
+      console.error("Sign-up error:", err);
+      let errorMessage = "Failed to create account. Please try again.";
+      if (typeof err === "object" && err !== null) {
+        // Check for Clerk error format
+        if (Array.isArray((err as any).errors) && (err as any).errors[0]?.message) {
+          errorMessage = (err as any).errors[0].message;
+        } else if (typeof (err as any).message === "string") {
+          errorMessage = (err as any).message;
+        }
+      }
+      Alert.alert("Error", errorMessage);
       setLoading(false);
     }
   };
@@ -100,28 +100,17 @@ export default function SignUpScreen() {
     setOtpError(false);
     setLoading(true);
     try {
-      console.log("Attempting email verification with code:", code);
       const signUpAttempt = await signUp.attemptEmailAddressVerification({
         code,
       });
 
-      console.log("Verification attempt status:", signUpAttempt.status);
-      console.log(
-        "Verification attempt:",
-        JSON.stringify(signUpAttempt, null, 2)
-      );
-
       if (signUpAttempt.status === "complete") {
-        console.log("Verification completed successfully");
         await setActive({ session: signUpAttempt.createdSessionId });
-        // Redirect to profile setup for new users
         router.replace("../(app)/profile-setup");
       } else {
-        console.error("Verification failed with status:", signUpAttempt.status);
         setOtpError(true);
       }
     } catch (err) {
-      console.error("Verification error:", JSON.stringify(err, null, 2));
       setOtpError(true);
     } finally {
       setLoading(false);
@@ -132,13 +121,11 @@ export default function SignUpScreen() {
     if (!isLoaded) return;
 
     try {
-      console.log("Resending verification code...");
       await signUp.prepareEmailAddressVerification();
       setOtpError(false);
       setCode("");
       Alert.alert("Success", "Verification code resent to your email");
     } catch (err) {
-      console.error("Resend error:", JSON.stringify(err, null, 2));
       Alert.alert(
         "Error",
         "Failed to resend verification code. Please try again."
@@ -152,11 +139,9 @@ export default function SignUpScreen() {
 
       if (createdSessionId && setActive) {
         setActive({ session: createdSessionId });
-        // Let app layout handle redirect based on profile completion
         router.replace("../(app)");
       }
     } catch (err) {
-      console.error("OAuth error", err);
       Alert.alert("Error", "Google sign up failed. Please try again.");
     }
   }, []);
@@ -167,18 +152,16 @@ export default function SignUpScreen() {
 
       if (createdSessionId && setActive) {
         setActive({ session: createdSessionId });
-        // Let app layout handle redirect based on profile completion
         router.replace("../(app)");
       }
     } catch (err) {
-      console.error("OAuth error", err);
       Alert.alert("Error", "Apple sign up failed. Please try again.");
     }
   }, []);
 
   if (pendingVerification) {
     return (
-      <SafeAreaView className="flex-1 bg-white">
+      <SafeAreaView className="flex-1 bg-white text-center">
         <KeyboardAvoidingView
           behavior={Platform.OS === "ios" ? "padding" : "height"}
           style={{ flex: 1 }}
@@ -193,12 +176,30 @@ export default function SignUpScreen() {
             <View className="flex-1 items-center justify-center px-6 py-8">
               <View className="w-full max-w-sm gap-6">
                 <View className="text-center">
-                  <Text className="text-3xl font-bold text-gray-900 mb-2">
-                    Verify Your Email
-                  </Text>
-                  <Text className="text-gray-600">
-                    Enter the 6-digit code sent to your email
-                  </Text>
+                  <Image
+                    source={require("../../assets/icons/Logo.png")}
+                    style={{
+                      width: 150,
+                      height: 50,
+                      alignSelf: "center",
+                    }}
+                    className="mb-4"
+                    resizeMode="contain"
+                  />
+                  <AppText
+                    tweight="semibold"
+                    className="text-3xl text-center text-neutral-800 mt-4 mb-2"
+                  >
+                    You&apos;re Almost There!
+                  </AppText>
+
+                  <AppText
+                    tweight="regular"
+                    className="text-sm  text-neutral-400 text-center"
+                  >
+                    We&apos;ve sent a verification code to your email. Please
+                    enter it to continue.
+                  </AppText>
                 </View>
 
                 <OTPInput
@@ -208,19 +209,13 @@ export default function SignUpScreen() {
                   error={otpError}
                   disabled={loading}
                 />
-
-                <TouchableOpacity
+                <DarkButton
                   onPress={onVerifyPress}
                   disabled={loading || code.length !== 6}
-                  className={`w-full py-3 rounded-lg ${
-                    loading || code.length !== 6 ? "bg-gray-400" : "bg-blue-600"
-                  }`}
+                  className="items-end"
                 >
-                  <Text className="text-white text-center font-semibold text-base">
-                    {loading ? "Verifying..." : "Verify Email"}
-                  </Text>
-                </TouchableOpacity>
-
+                  {loading ? "Verifying..." : "Verify Email"}
+                </DarkButton>
                 <TouchableOpacity
                   onPress={onResendCode}
                   disabled={loading}
@@ -228,7 +223,7 @@ export default function SignUpScreen() {
                 >
                   <Text
                     className={`text-center text-sm ${
-                      loading ? "text-gray-400" : "text-blue-600"
+                      loading ? "text-gray-400" : "text-neutral-600 underline"
                     }`}
                   >
                     Didn&apos;t receive the code? Resend
@@ -243,103 +238,158 @@ export default function SignUpScreen() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-white">
+    <SafeAreaView className="flex-1 w-[100vw] bg-white items-center ">
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={{ flex: 1 }}
         keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
       >
         <ScrollView
-          className="flex-1"
+          className="flex-1 w-[100%] h-full"
           contentContainerStyle={{ flexGrow: 1 }}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
-          <View className="flex-1 items-center justify-center px-6 py-8">
-            <View className="w-full max-w-sm gap-4">
-              <View className="text-center">
-                <Text className="text-3xl font-bold text-gray-900 mb-2">
-                  Create Account
-                </Text>
-                <Text className="text-gray-600">Sign up to get started</Text>
-              </View>
-
-              {/* Social Login Buttons */}
-              <View className="space-y-3">
-                <TouchableOpacity
-                  onPress={onGooglePress}
-                  className="w-full py-3 px-4 border border-gray-300 rounded-lg flex-row items-center justify-center space-x-3"
+          {/* Logo and text */}
+          <View className="flex-1  items-center justify-center">
+            <Image
+              source={require("../../assets/icons/Logo.png")}
+              style={{
+                width: 150,
+                height: 50,
+                alignSelf: "center",
+              }}
+              resizeMode="contain"
+            />
+            <AppText className="text-3xl text-center mt-4" tweight="semibold">
+              Welcome
+            </AppText>
+            <AppText
+              className="text-sm text-neutral-500 text-center"
+              tweight="regular"
+            >
+              Create your account to get started
+            </AppText>
+          </View>
+          <View className="w-full flex-col items-center justify-center gap-4">
+            {/* Buttons Container google and apple */}
+            <View className="flex-1 w-[90vw] gap-4">
+              <LightButton
+                icon={<Ionicons name="logo-google" size={24} />}
+                iconPosition="left"
+                className="my-2 w-full py-4 rounded-2xl"
+                onPress={onGooglePress}
+              >
+                Continue with Google
+              </LightButton>
+              <DarkButton
+                icon={<Ionicons name="logo-apple" size={24} color="white" />}
+                className="my-2 w-full py-4"
+                iconPosition="left"
+                onPress={onApplePress}
+              >
+                Continue with Apple ID
+              </DarkButton>
+            </View>
+            {/* Divider */}
+            <View className="w-full flex-row items-center justify-center gap-4">
+              <DashedSeparator
+                color="#A3A3A3"
+                thickness={1}
+                width={120}
+                className="w-[40vw]"
+                gap={10}
+              />
+              <AppText
+                className="text-sm text-neutral-500 text-center"
+                tweight="regular"
+              >
+                or
+              </AppText>
+              <DashedSeparator
+                color="#A3A3A3"
+                thickness={1}
+                width={120}
+                className="w-[40vw]"
+                gap={10}
+              />
+            </View>
+            {/* Email and password */}
+            <View className="flex-1 w-[90vw] gap-4 justify-end">
+              {/* Email */}
+              <View className="flex items-start">
+                <AppText
+                  className="text-sm text-neutral-500 text-center"
+                  tweight="regular"
                 >
-                  <Text className="text-2xl">🔍</Text>
-                  <Text className="text-gray-700 font-semibold text-base">
-                    Continue with Google
-                  </Text>
-                </TouchableOpacity>
-
-                {Platform.OS === "ios" && (
-                  <TouchableOpacity
-                    onPress={onApplePress}
-                    className="w-full py-3 px-4 bg-black rounded-lg flex-row items-center justify-center space-x-3"
-                  >
-                    <Text className="text-2xl">🍎</Text>
-                    <Text className="text-white font-semibold text-base">
-                      Continue with Apple
-                    </Text>
-                  </TouchableOpacity>
-                )}
-              </View>
-
-              {/* Divider */}
-              <View className="flex-row items-center space-x-4">
-                <View className="flex-1 h-px bg-gray-300" />
-                <Text className="text-gray-500 font-medium">or</Text>
-                <View className="flex-1 h-px bg-gray-300" />
-              </View>
-
-              <View className="gap-4">
-                {/* Email/Password Form */}
+                  Email
+                </AppText>
                 <TextInput
-                  autoCapitalize="none"
+                  placeholder="Enter your email"
                   value={emailAddress}
-                  placeholder="Email address"
-                  onChangeText={(emailAddress) => setEmailAddress(emailAddress)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg text-base"
-                  keyboardType="email-address"
-                  returnKeyType="next"
-                  blurOnSubmit={false}
+                  onChangeText={setEmailAddress}
+                  className="w-full h-14 rounded-md border border-[#E0E0E0] p-2"
                 />
-
-                <TextInput
-                  value={password}
-                  placeholder="Password"
-                  secureTextEntry={true}
-                  onChangeText={(password) => setPassword(password)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg text-base"
-                  returnKeyType="done"
-                  blurOnSubmit={true}
-                />
-
-                <TouchableOpacity
+              </View>
+              {/* Password */}
+              <View className="flex items-start">
+                <AppText
+                  className="text-sm text-neutral-500 text-center"
+                  tweight="regular"
+                >
+                  Password
+                </AppText>
+                <View className="w-full h-14 rounded-md border border-[#E0E0E0] flex-row items-center px-2">
+                  <TextInput
+                    placeholder="Enter your password"
+                    value={password}
+                    onChangeText={setPassword}
+                    className="flex-1 h-full"
+                    secureTextEntry={!showPassword}
+                  />
+                  <TouchableOpacity
+                    onPress={() => setShowPassword((prev) => !prev)}
+                    className="pl-2 pr-1"
+                    hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                  >
+                    <AppText className="text-xl">
+                      {showPassword ? (
+                        <Ionicons name="eye-outline" size={24} color="black" />
+                      ) : (
+                        <Ionicons
+                          name="eye-off-outline"
+                          size={24}
+                          color="black"
+                        />
+                      )}
+                    </AppText>
+                  </TouchableOpacity>
+                </View>
+              </View>
+              {/* Sign up */}
+              <AppText className="text-sm text-neutral-500" tweight="regular">
+                Already have an account?{" "}
+                <Link href="/sign-in" className="text-neutral-800 underline">
+                  Sign in
+                </Link>
+              </AppText>
+              {/* Create Account button */}
+              <View className="w-full mt-16">
+                <DarkButton
+                  icon={
+                    <Ionicons
+                      name="arrow-forward-outline"
+                      size={24}
+                      color={"#ffffff"}
+                    />
+                  }
+                  className="w-full py-4"
+                  iconPosition="right"
                   onPress={onSignUpPress}
                   disabled={loading}
-                  className={`w-full py-3 rounded-lg ${loading ? "bg-gray-400" : "bg-blue-600"}`}
                 >
-                  <Text className="text-white text-center font-semibold text-base">
-                    {loading ? "Creating Account..." : "Create Account"}
-                  </Text>
-                </TouchableOpacity>
-              </View>
-
-              <View className="text-center">
-                <Text className="text-gray-600">
-                  Already have an account?{" "}
-                  <Link
-                    href="/(auth)/sign-in"
-                    className="text-blue-600 font-semibold"
-                  >
-                    Sign in
-                  </Link>
-                </Text>
+                  {loading ? "Creating Account..." : "Create Account"}
+                </DarkButton>
               </View>
             </View>
           </View>

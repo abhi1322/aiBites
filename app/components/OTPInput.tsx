@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Text, TextInput, TouchableOpacity, View } from "react-native";
+import { TextInput, TouchableOpacity, View } from "react-native";
+import { AppText } from "./AppText";
 
 interface OTPInputProps {
   length: number;
@@ -63,7 +64,7 @@ export default function OTPInput({
 
   return (
     <View className="w-full">
-      <View className="flex-row justify-center space-x-3 mb-4">
+      <View className="flex-row justify-center gap-2 mb-4">
         {Array.from({ length }, (_, index) => (
           <TouchableOpacity
             key={index}
@@ -72,7 +73,7 @@ export default function OTPInput({
               error
                 ? "border-red-500 bg-red-50"
                 : focusedIndex === index
-                  ? "border-blue-500 bg-blue-50"
+                  ? "border-neutral-500 bg-neutral-50"
                   : value[index]
                     ? "border-green-500 bg-green-50"
                     : "border-gray-300 bg-white"
@@ -92,16 +93,19 @@ export default function OTPInput({
               maxLength={1}
               selectTextOnFocus
               editable={!disabled}
-              selectionColor={error ? "#ef4444" : "#3b82f6"}
+              selectionColor={error ? "#ef4444" : "#000000"}
             />
           </TouchableOpacity>
         ))}
       </View>
 
       {error && (
-        <Text className="text-red-500 text-center text-sm mb-2">
+        <AppText
+          tweight="regular"
+          className="text-red-500 text-center text-sm mb-2"
+        >
           Invalid verification code
-        </Text>
+        </AppText>
       )}
     </View>
   );

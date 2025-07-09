@@ -240,7 +240,7 @@ export default function SignInScreen() {
               </View>
               {/* Sign up */}
               <AppText className="text-sm text-neutral-500" tweight="regular">
-                Already have an account?{" "}
+                Don&apos;t have an account?{" "}
                 <Link href="/sign-up" className="text-neutral-800 underline">
                   Sign up
                 </Link>
