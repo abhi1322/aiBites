@@ -1,19 +1,22 @@
 import { useOAuth, useSignIn, useUser } from "@clerk/clerk-expo";
+import Ionicons from "@expo/vector-icons/Ionicons";
 import { Link, useRouter } from "expo-router";
-import React, { useCallback } from "react";
+import * as WebBrowser from "expo-web-browser";
+import React, { useCallback, useState } from "react";
 import {
   Alert,
+  Image,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  Text,
   TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-
-import * as WebBrowser from "expo-web-browser";
+import { AppText } from "../components/AppText";
+import { DarkButton, LightButton } from "../components/ui/Button";
+import DashedSeparator from "../components/ui/DashedSeparator";
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -25,6 +28,7 @@ export default function SignInScreen() {
   const [emailAddress, setEmailAddress] = React.useState("");
   const [password, setPassword] = React.useState("");
   const [loading, setLoading] = React.useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   // OAuth hooks
   const { startOAuthFlow: startGoogleOAuthFlow } = useOAuth({
@@ -103,102 +107,160 @@ export default function SignInScreen() {
   }, []);
 
   return (
-    <SafeAreaView className="flex-1 bg-white">
+    <SafeAreaView className="flex-1 w-[100vw] bg-white items-center ">
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={{ flex: 1 }}
         keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
       >
         <ScrollView
-          className="flex-1"
+          className="flex-1 w-[100%] h-full"
           contentContainerStyle={{ flexGrow: 1 }}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
-          <View className="flex-1 items-center justify-center px-6 py-8">
-            <View className="w-full max-w-sm gap-4">
-              <View className="text-center">
-                <Text className="text-3xl font-bold text-gray-900 mb-2">
-                  Welcome Back
-                </Text>
-                <Text className="text-gray-600">Sign in to your account</Text>
-              </View>
+          {/* Logo and text */}
+          <View className="flex-1  items-center justify-center">
+            <Image
+              source={require("../../assets/icons/Logo.png")}
+              style={{
+                width: 150,
+                height: 50,
+                alignSelf: "center",
+              }}
+              resizeMode="contain"
+            />
+            <AppText className="text-3xl text-center mt-4" tweight="semibold">
+              Welcome Back!
+            </AppText>
+            <AppText
+              className="text-sm text-neutral-500 text-center"
+              tweight="regular"
+            >
+              Sign into your account
+            </AppText>
+          </View>
+          <View className="w-full flex-col items-center justify-center gap-4">
+            {/* Buttons Container google and apple */}
+            <View className="flex-1 w-[90vw] gap-4">
+              <LightButton
+                icon={<Ionicons name="logo-google" size={24} />}
+                iconPosition="left"
+                className="my-2 w-full py-4 rounded-2xl"
+                onPress={onGooglePress}
+              >
+                Continue with Google
+              </LightButton>
+              <DarkButton
+                icon={<Ionicons name="logo-apple" size={24} color="white" />}
+                className="my-2 w-full py-4"
+                iconPosition="left"
+                onPress={onApplePress}
+              >
+                Continue with Apple ID
+              </DarkButton>
+            </View>
+            {/* Divider */}
+            <View className="w-full flex-row items-center justify-center gap-4">
+              <DashedSeparator
+                color="#A3A3A3"
+                thickness={1}
+                width={120}
+                className="w-[40vw]"
+                gap={10}
+              />
+              <AppText
+                className="text-sm text-neutral-500 text-center"
+                tweight="regular"
+              >
+                or
+              </AppText>
+              <DashedSeparator
+                color="#A3A3A3"
+                thickness={1}
+                width={120}
+                className="w-[40vw]"
+                gap={10}
+              />
+            </View>
+            {/* <View className="w-[90vw] h-20 border-neutral-200 border-dashed border" /> */}
 
-              {/* Social Login Buttons */}
-              <View className="space-y-3">
-                <TouchableOpacity
-                  onPress={onGooglePress}
-                  className="w-full py-3 px-4 border border-gray-300 rounded-lg flex-row items-center justify-center space-x-3"
+            {/* Email and password */}
+            <View className="flex-1 w-[90vw] gap-4 justify-end">
+              {/* Email */}
+              <View className="flex items-start">
+                <AppText
+                  className="text-sm text-neutral-500 text-center"
+                  tweight="regular"
                 >
-                  <Text className="text-2xl">🔍</Text>
-                  <Text className="text-gray-700 font-semibold text-base">
-                    Continue with Google
-                  </Text>
-                </TouchableOpacity>
-
-                {Platform.OS === "ios" && (
-                  <TouchableOpacity
-                    onPress={onApplePress}
-                    className="w-full py-3 px-4 bg-black rounded-lg flex-row items-center justify-center space-x-3"
-                  >
-                    <Text className="text-2xl">🍎</Text>
-                    <Text className="text-white font-semibold text-base">
-                      Continue with Apple
-                    </Text>
-                  </TouchableOpacity>
-                )}
-              </View>
-
-              {/* Divider */}
-              <View className="flex-row items-center space-x-4">
-                <View className="flex-1 h-px bg-gray-300" />
-                <Text className="text-gray-500 font-medium">or</Text>
-                <View className="flex-1 h-px bg-gray-300" />
-              </View>
-
-              <View className="gap-4">
+                  Email
+                </AppText>
                 <TextInput
-                  autoCapitalize="none"
+                  placeholder="Enter your email"
                   value={emailAddress}
-                  placeholder="Email address"
-                  onChangeText={(emailAddress) => setEmailAddress(emailAddress)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg text-base"
-                  keyboardType="email-address"
-                  returnKeyType="next"
-                  blurOnSubmit={false}
+                  onChangeText={setEmailAddress}
+                  className="w-full h-14 rounded-md border border-[#E0E0E0] p-2"
                 />
-
-                <TextInput
-                  value={password}
-                  placeholder="Password"
-                  secureTextEntry={true}
-                  onChangeText={(password) => setPassword(password)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg text-base"
-                  returnKeyType="done"
-                  blurOnSubmit={true}
-                />
-
-                <TouchableOpacity
-                  onPress={onSignInPress}
-                  disabled={loading}
-                  className={`w-full py-3 rounded-lg ${loading ? "bg-gray-400" : "bg-blue-600"}`}
-                >
-                  <Text className="text-white text-center font-semibold text-base">
-                    {loading ? "Signing In..." : "Sign In"}
-                  </Text>
-                </TouchableOpacity>
               </View>
-
-              <View className="text-center">
-                <Text className="text-gray-600">
-                  Don&apos;t have an account?{" "}
-                  <Link
-                    href="/(auth)/sign-up"
-                    className="text-blue-600 font-semibold"
+              {/* Password */}
+              <View className="flex items-start">
+                <AppText
+                  className="text-sm text-neutral-500 text-center"
+                  tweight="regular"
+                >
+                  Password
+                </AppText>
+                <View className="w-full h-14 rounded-md border border-[#E0E0E0] flex-row items-center px-2">
+                  <TextInput
+                    placeholder="Enter your password"
+                    value={password}
+                    onChangeText={setPassword}
+                    className="flex-1 h-full"
+                    secureTextEntry={!showPassword}
+                  />
+                  <TouchableOpacity
+                    onPress={() => setShowPassword((prev) => !prev)}
+                    className="pl-2 pr-1"
+                    hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                   >
-                    Sign up
-                  </Link>
-                </Text>
+                    {/* Use a real icon in production, e.g. from react-native-vector-icons */}
+                    <AppText className="text-xl">
+                      {showPassword ? (
+                        <Ionicons name="eye-outline" size={24} color="black" />
+                      ) : (
+                        <Ionicons
+                          name="eye-off-outline"
+                          size={24}
+                          color="black"
+                        />
+                      )}
+                    </AppText>
+                  </TouchableOpacity>
+                </View>
+              </View>
+              {/* Sign up */}
+              <AppText className="text-sm text-neutral-500" tweight="regular">
+                Already have an account?{" "}
+                <Link href="/sign-up" className="text-neutral-800 underline">
+                  Sign up
+                </Link>
+              </AppText>
+              {/* Login button */}
+              <View className="w-full mt-16">
+                <DarkButton
+                  icon={
+                    <Ionicons
+                      name="arrow-forward-outline"
+                      size={24}
+                      color={"#ffffff"}
+                    />
+                  }
+                  className="w-full py-4"
+                  iconPosition="right"
+                  onPress={onSignInPress}
+                >
+                  Login
+                </DarkButton>
               </View>
             </View>
           </View>

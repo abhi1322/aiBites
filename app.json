@@ -8,6 +8,19 @@
     "scheme": "aibite",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
+    "assetBundlePatterns": ["**/*"],
+    "fonts": {
+      "Poppins-Black": "./assets/fonts/Poppins-Black.ttf",
+      "Poppins-Bold": "./assets/fonts/Poppins-Bold.ttf",
+      "Poppins-ExtraBold": "./assets/fonts/Poppins-ExtraBold.ttf",
+      "Poppins-ExtraLight": "./assets/fonts/Poppins-ExtraLight.ttf",
+      "Poppins-Light": "./assets/fonts/Poppins-Light.ttf",
+      "Poppins-Medium": "./assets/fonts/Poppins-Medium.ttf",
+      "Poppins-Regular": "./assets/fonts/Poppins-Regular.ttf",
+      "Poppins-SemiBold": "./assets/fonts/Poppins-SemiBold.ttf",
+      "Poppins-Thin": "./assets/fonts/Poppins-Thin.ttf",
+      "SpaceMono-Regular": "./assets/fonts/SpaceMono-Regular.ttf"
+    },
     "ios": {
       "supportsTablet": true,
       "infoPlist": {
@@ -58,7 +71,8 @@
           "color": "#ffffff",
           "sounds": ["./assets/sounds/notification.wav"]
         }
-      ]
+      ],
+      "expo-font"
     ],
     "experiments": {
       "typedRoutes": true
