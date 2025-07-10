@@ -1,6 +1,8 @@
-import React from "react";
-import { Text, View } from "react-native";
+import React, { useEffect, useState } from "react";
+import { View } from "react-native";
+import { ScrollView } from "react-native-gesture-handler";
 import { RulerPicker } from "react-native-ruler-picker";
+import { AppText } from "../AppText";
 
 interface WeightStepProps {
   weight: number;
@@ -11,44 +13,59 @@ export const WeightStep: React.FC<WeightStepProps> = ({
   weight,
   updateWeight,
 }) => {
-  const weightValue = weight || 70;
+  const [localWeight, setLocalWeight] = useState(weight);
+
+  useEffect(() => {
+    setLocalWeight(weight); // Sync if parent changes
+  }, [weight]);
+
   return (
-    <View className="flex-1 justify-between pb-20">
-      <View className="space-y-6">
-        <View className="text-center">
-          <Text className="text-2xl font-bold text-gray-900 mb-2">
-            Your Weight
-          </Text>
-          <Text className="text-gray-600">
-            Enter your current weight in kilograms
-          </Text>
+    <ScrollView>
+      <View className="flex-1 justify-between pb-20">
+        <View className="mt-4 text-center items-center justify-center">
+          <AppText tweight="semibold" className="text-2xl text-neutral-800">
+            Select your weight
+          </AppText>
+          <AppText
+            tweight="regular"
+            className="text-neutral-500 text-sm text-center mt-2 w-[80%]"
+          >
+            Enter your weight in kilograms, so we can calculate your BMI.
+          </AppText>
         </View>
 
-        <View className="bg-blue-50 rounded-lg p-4">
-          <Text className="text-blue-800 text-sm">
-            💡 Tip: 1 kg = 2.2 lbs. You can use a bathroom scale or check recent
-            medical records.
-          </Text>
+        <View className="flex-1 h-[40vh] justify-end items-center">
+          <AppText
+            tweight="semibold"
+            className="text-neutral-600 text-4xl text-center mb-10"
+          >
+            {localWeight} kg
+          </AppText>
+          <RulerPicker
+            min={30}
+            max={200}
+            step={1}
+            fractionDigits={0}
+            initialValue={Number(weight)}
+            onValueChange={(val) => setLocalWeight(Number(val))}
+            onValueChangeEnd={(val) => updateWeight(Number(val))}
+            unit="kg"
+            width={300}
+            height={80}
+            indicatorColor="#000000"
+            valueTextStyle={{
+              color: "transparent",
+            }}
+            unitTextStyle={{
+              color: "transparent",
+            }}
+            indicatorHeight={120}
+            longStepColor="#e2e2e2"
+            longStepHeight={60}
+          />
+          <View className="-z-10 w-[80vw] h-[2px] bg-neutral-200" />
         </View>
       </View>
-
-      <View className="items-center space-y-4">
-        <Text className="text-3xl font-bold text-blue-600">
-          {weightValue} kg
-        </Text>
-        <RulerPicker
-          min={30}
-          max={200}
-          step={1}
-          fractionDigits={0}
-          initialValue={weightValue}
-          onValueChangeEnd={(val: string) => updateWeight(Number(val))}
-          unit="kg"
-          width={300}
-          height={80}
-          indicatorColor="#3b82f6"
-        />
-      </View>
-    </View>
+    </ScrollView>
   );
 };
