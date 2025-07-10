@@ -73,7 +73,7 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({ currentStep }) => {
                 <DashedSeparator
                   width={dashWidth}
                   color={idx < currentStep ? "#373636" : "#d1d5db"} // blue-600 or gray-300
-                  thickness={2}
+                  thickness={1}
                   dashLength={6}
                   gap={4}
                   style={{ marginHorizontal: 4 }}

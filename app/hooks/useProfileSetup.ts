@@ -124,7 +124,6 @@ export const useProfileSetup = () => {
 
   // Date picker
   const handleDateChange = (event: any, selectedDate?: Date) => {
-    setShowDatePicker(false);
     if (selectedDate) {
       updateProfileData({ dateOfBirth: selectedDate });
     }

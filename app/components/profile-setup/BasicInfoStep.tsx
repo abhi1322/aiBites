@@ -1,5 +1,7 @@
-import React from "react";
+import React, { useState } from "react";
 import { Image, Text, TextInput, TouchableOpacity, View } from "react-native";
+import DropDownPicker from "react-native-dropdown-picker";
+import { AppText } from "../AppText";
 
 // Profile data interface
 interface ProfileData {
@@ -31,98 +33,130 @@ export const BasicInfoStep: React.FC<BasicInfoStepProps> = ({
   pickImage,
   formatDate,
 }) => {
+  const [open, setOpen] = useState(false);
+  const [value, setValue] = useState(profileData.gender);
+  const [items, setItems] = useState([
+    { label: "Male", value: "male" },
+    { label: "Female", value: "female" },
+    { label: "Other", value: "other" },
+  ]);
+
   return (
     <View className="space-y-6">
       <View className="text-center">
-        <Text className="text-2xl font-bold text-gray-900 mb-2">
-          Basic Information
-        </Text>
-        <Text className="text-gray-600">Tell us about yourself</Text>
+        <AppText
+          tweight="semibold"
+          className="text-2xl text-center text-gray-900 mb-2"
+        >
+          Fill your basic information
+        </AppText>
       </View>
 
       {/* Profile Image */}
-      <View className="items-center">
-        <TouchableOpacity
-          onPress={pickImage}
-          className="w-24 h-24 rounded-full bg-gray-200 items-center justify-center border-2 border-gray-300"
+      <View className="items-center ">
+        <View className="border-neutral-200 rounded-full border-[4px]">
+          <TouchableOpacity
+            onPress={pickImage}
+            className="w-24 h-24 rounded-full bg-gray-200 items-center justify-center border-2  border-neutral-500"
+          >
+            {profileData.profileImage ? (
+              <Image
+                source={{ uri: profileData.profileImage }}
+                className="w-24 h-24 rounded-full"
+              />
+            ) : (
+              <Text className="text-gray-500 text-sm">Add Photo</Text>
+            )}
+          </TouchableOpacity>
+        </View>
+        <AppText
+          tweight="regular"
+          className="text-sm text-center mt-2 text-neutral-500"
         >
-          {profileData.profileImage ? (
-            <Image
-              source={{ uri: profileData.profileImage }}
-              className="w-24 h-24 rounded-full"
-            />
-          ) : (
-            <Text className="text-gray-500 text-sm">Add Photo</Text>
-          )}
-        </TouchableOpacity>
+          Add Photo
+        </AppText>
       </View>
 
       {/* Name Fields */}
-      <View className="flex-row space-x-2">
-        <View className="flex-1">
-          <Text className="text-gray-700 font-semibold mb-2">First Name *</Text>
+      <View className="flex-row mt-8  w-full gap-4">
+        <View className="w-[50%] items-start">
+          <AppText
+            className="text-sm text-neutral-500 text-center"
+            tweight="regular"
+          >
+            First Name
+          </AppText>
           <TextInput
+            placeholder="Enter your first name"
+            textContentType="givenName"
             value={profileData.firstName}
-            onChangeText={(text) => updateProfileData({ firstName: text })}
-            placeholder="First name"
-            className="border border-gray-300 rounded-lg px-4 py-3 text-lg"
-            autoCapitalize="words"
-            autoCorrect={false}
-            spellCheck={false}
+            onChangeText={(firstName) => updateProfileData({ firstName })}
+            className="w-full h-14 rounded-md border border-[#E0E0E0] p-2"
           />
         </View>
-        <View className="flex-1">
-          <Text className="text-gray-700 font-semibold mb-2">Last Name *</Text>
+        <View className="w-[45%] items-start">
+          <AppText
+            className="text-sm text-neutral-500 text-center"
+            tweight="regular"
+          >
+            Last Name
+          </AppText>
           <TextInput
+            placeholder="Enter your last name"
+            textContentType="familyName"
             value={profileData.lastName}
-            onChangeText={(text) => updateProfileData({ lastName: text })}
-            placeholder="Last name"
-            className="border border-gray-300 rounded-lg px-4 py-3 text-lg"
-            autoCapitalize="words"
-            autoCorrect={false}
-            spellCheck={false}
+            onChangeText={(lastName) => updateProfileData({ lastName })}
+            className="w-full h-14 rounded-md border border-[#E0E0E0] p-2"
           />
         </View>
       </View>
 
       {/* Gender */}
-      <View>
-        <Text className="text-gray-700 font-semibold mb-2">Gender *</Text>
-        <View className="flex-row space-x-4">
-          {["male", "female", "other"].map((g) => (
-            <TouchableOpacity
-              key={g}
-              onPress={() =>
-                updateProfileData({ gender: g as "male" | "female" | "other" })
-              }
-              className={`px-4 py-2 rounded-lg border ${
-                profileData.gender === g
-                  ? "bg-blue-500 border-blue-500"
-                  : "border-gray-300"
-              }`}
-            >
-              <Text
-                className={
-                  profileData.gender === g ? "text-white" : "text-gray-700"
-                }
-              >
-                {g.charAt(0).toUpperCase() + g.slice(1)}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
+      <View className="mt-4 mb-4">
+        <AppText tweight="regular" className="text-neutral-500 text-sm mb-2">
+          Gender *
+        </AppText>
+        <DropDownPicker
+          open={open}
+          value={value}
+          items={items}
+          setOpen={setOpen}
+          setValue={setValue}
+          setItems={setItems}
+          placeholder="Select gender"
+          style={{ minHeight: 48, borderColor: "#E0E0E0" }}
+          containerStyle={{ width: "100%" }}
+          onChangeValue={(val) =>
+            updateProfileData({ gender: val as "male" | "female" | "other" })
+          }
+          textStyle={{
+            color: "#171717",
+          }}
+          dropDownContainerStyle={{
+            backgroundColor: "#f8f9fa",
+            borderColor: "#E0E0E0",
+            borderWidth: 1,
+            borderRadius: 10,
+            padding: 10,
+          }}
+          badgeTextStyle={{
+            color: "#171717",
+          }}
+        />
       </View>
 
       {/* Date of Birth */}
       <View>
-        <Text className="text-gray-700 font-semibold mb-2">Date of Birth</Text>
+        <AppText tweight="regular" className="text-neutral-500 text-sm mb-2">
+          Date of Birth
+        </AppText>
         <TouchableOpacity
           onPress={showDatePicker}
-          className="border border-gray-300 rounded-lg px-4 py-3 bg-white"
+          className="border border-neutral-200 rounded-lg px-4 py-3 bg-white"
         >
-          <Text className="text-lg text-gray-900">
+          <AppText tweight="regular" className="text-neutral-500">
             {formatDate(profileData.dateOfBirth)}
-          </Text>
+          </AppText>
         </TouchableOpacity>
       </View>
     </View>
