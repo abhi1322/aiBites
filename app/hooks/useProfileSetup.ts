@@ -194,7 +194,6 @@ export const useProfileSetup = () => {
 
     try {
       let profileImageUrl = profileData.profileImage;
-      // If the image is a local URI (starts with file:// or content://), upload to Cloudinary
       if (
         profileImageUrl &&
         (profileImageUrl.startsWith("file://") ||
@@ -223,17 +222,15 @@ export const useProfileSetup = () => {
           : undefined,
         fatGoal: profileData.fatGoal ? Number(profileData.fatGoal) : undefined,
         profileImage: profileImageUrl,
+        profileCompleted: true, // <-- Mark as complete on final step
       });
-
-      console.log("Profile completion result:", result);
-      console.log("Profile-setup: Profile completion successful");
+      // Navigate to Congratulations page
+      router.replace("/congratulations");
     } catch (error) {
       console.error("Profile completion error:", error);
       Alert.alert("Error", "Failed to update profile. Please try again.");
     } finally {
       setIsLoading(false);
-      // Redirect to app index which will handle routing based on profile completion
-      router.replace("/(app)");
     }
   };
 

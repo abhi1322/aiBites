@@ -114,13 +114,9 @@ export function extractPublicIdFromUrl(secureUrl: string): string {
 export async function uploadProfilePictureToCloudinary(
   localUri: string
 ): Promise<string> {
-  // Upload and get the secure_url (original)
+  // Upload and get the secure_url (original, directly accessible)
   const secureUrl = await uploadToCloudinary(localUri);
-  // Extract public_id from the secure_url
-  const publicId = extractPublicIdFromUrl(secureUrl);
-  // Get the compressed URL
-  const { compressedUrl } = getCloudinaryImageUrls(publicId);
-  return compressedUrl;
+  return secureUrl;
 }
 
 // Debug function to test configuration

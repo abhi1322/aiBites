@@ -40,6 +40,7 @@ export const createOrUpdateUser = mutation({
       // Create new user
       return await ctx.db.insert("users", {
         ...args,
+        profileCompleted: false, // <-- Always set false on creation
         createdAt: now,
         updatedAt: now,
       });
