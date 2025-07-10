@@ -17,7 +17,9 @@ export const HeightStep: React.FC<HeightStepProps> = ({
   const [localHeight, setLocalHeight] = useState(height);
 
   useEffect(() => {
-    setLocalHeight(height); // Sync if parent changes
+    if (height) {
+      setLocalHeight("150");
+    }
   }, [height]);
 
   return (

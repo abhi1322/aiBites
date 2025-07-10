@@ -76,9 +76,7 @@ const DarkButton: React.FC<ButtonProps> = ({
     <>
       {icon && iconPosition === "left" && <View className="mr-2">{icon}</View>}
       {children && (
-        <AppText className="text-lg font-medium text-white">
-          {children}
-        </AppText>
+        <AppText className="text-lg font-medium text-white">{children}</AppText>
       )}
       {icon && iconPosition === "right" && <View className="ml-2">{icon}</View>}
     </>
@@ -111,4 +109,49 @@ const DarkButton: React.FC<ButtonProps> = ({
   );
 };
 
-export { DarkButton, LightButton };
+const DarkButtonSmall: React.FC<ButtonProps> = ({
+  children,
+  icon,
+  iconPosition = "left",
+  className = "",
+  onPress,
+  disabled = false,
+}) => {
+  const content = (
+    <>
+      {icon && iconPosition === "left" && <View className="mr-2">{icon}</View>}
+      {children && (
+        <AppText className="text-lg font-medium text-white">{children}</AppText>
+      )}
+      {icon && iconPosition === "right" && <View className="ml-2">{icon}</View>}
+    </>
+  );
+
+  return (
+    <TouchableOpacity
+      onPress={onPress}
+      disabled={disabled}
+      activeOpacity={0.8}
+      className={`overflow-hidden border border-gray-500 ${className}`}
+    >
+      <LinearGradient
+        colors={["#404040", "#171717"]}
+        start={{ x: 0.5, y: 0 }}
+        end={{ x: 0.5, y: 1 }}
+        style={{
+          // paddingVertical: 8,
+          // paddingHorizontal: 24,
+          height: "100%",
+          width: "100%",
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        {content}
+      </LinearGradient>
+    </TouchableOpacity>
+  );
+};
+
+export { DarkButton, DarkButtonSmall, LightButton };

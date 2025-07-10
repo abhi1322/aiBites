@@ -90,6 +90,20 @@ export default function ProfileSetupScreen() {
           updateProteinGoal={(goal) => updateProfileData({ proteinGoal: goal })}
           updateCarbGoal={(goal) => updateProfileData({ carbGoal: goal })}
           updateFatGoal={(goal) => updateProfileData({ fatGoal: goal })}
+          gender={profileData.gender === "male" ? "male" : "female"}
+          age={(() => {
+            const dob = profileData.dateOfBirth;
+            if (!dob) return 25;
+            const today = new Date();
+            let age = today.getFullYear() - dob.getFullYear();
+            const m = today.getMonth() - dob.getMonth();
+            if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) {
+              age--;
+            }
+            return age;
+          })()}
+          height={Number(profileData.height) || 170}
+          weight={Number(profileData.weight) || 70}
         />
       ),
     }),
