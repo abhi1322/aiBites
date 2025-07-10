@@ -1,14 +1,14 @@
+import { AppText } from "@/app/components/AppText";
 import CalendarStripComponent from "@/app/components/CalendarStripComponent";
 import CircularNutritionSummary from "@/app/components/CircularNutritionSummary";
 import FoodItemsCard from "@/app/components/FoodItemsCard";
-import NotificationStatus from "@/app/components/NotificationStatus";
 import { useUser } from "@clerk/clerk-expo";
 import axios from "axios";
 import { useQuery } from "convex/react";
 import { Redirect, useRouter } from "expo-router";
 import moment from "moment";
 import { useEffect, useState } from "react";
-import { ScrollView, Text, View } from "react-native";
+import { ScrollView, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { api } from "../../../convex/_generated/api"; // Adjust the path as needed
 
@@ -65,9 +65,9 @@ export default function HomeScreen() {
 
   const clerkID = userData?.clerkId;
 
-  console.log("clerkID", clerkID);
-  console.log("userData", userData);
-  console.log("user?.id", user?.id);
+  // console.log("clerkID", clerkID);
+  // console.log("userData", userData);
+  // console.log("user?.id", user?.id);
 
   return (
     <SafeAreaView className="flex-1 bg-white">
@@ -76,12 +76,19 @@ export default function HomeScreen() {
         onDateChange={handleDateChange}
       />
       <ScrollView className="flex-1 px-4">
-        <Text className="text-2xl font-bold">
-          Welcome, {userData?.firstName}
-        </Text>
+        {/* semi bold text */}
+        <AppText
+          tweight="semibold"
+          className="text-2xl font-bold text-neutral-800 text-center mb-1"
+        >
+          Welcome, {userData?.firstName}!
+        </AppText>
+        <AppText className="text-sm text-gray-500 text-center">
+          Let’s track your meals and hit your goals.
+        </AppText>
 
-        {/* Notification Status */}
-        <NotificationStatus onPressSettings={handleNotificationSettings} />
+        {/* Notification Status
+        <NotificationStatus onPressSettings={handleNotificationSettings} /> */}
 
         {/* Food Items for Selected Date */}
         {clerkID && (

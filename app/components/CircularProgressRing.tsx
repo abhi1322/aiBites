@@ -1,6 +1,7 @@
 import React from "react";
 import { Text, View } from "react-native";
 import Svg, { Circle } from "react-native-svg";
+import { AppText } from "./AppText";
 
 interface CircularProgressRingProps {
   progress: number; // 0-100
@@ -59,20 +60,20 @@ export default function CircularProgressRing({
         {/* Center content */}
         <View className="absolute inset-0 justify-center items-center">
           {showPercentage ? (
-            <Text className="text-lg font-bold text-gray-800">
+            <AppText className="text-lg font-bold text-gray-800">
               {Math.round(progress)}%
-            </Text>
+            </AppText>
           ) : (
-            <View className="items-center">
+            <View className="items-center flex-row">
               {value && (
-                <Text className="text-sm font-semibold text-gray-800">
+                <AppText className="text-sm font-semibold text-gray-800">
                   {value}
-                </Text>
+                </AppText>
               )}
               {label && (
-                <Text className="text-xs text-gray-600 text-center">
+                <AppText className="text-xs text-gray-600 text-center">
                   {label}
-                </Text>
+                </AppText>
               )}
             </View>
           )}

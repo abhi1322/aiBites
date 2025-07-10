@@ -7,6 +7,7 @@ import React from "react";
 import { ActivityIndicator, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
+import ToastManager from "toastify-react-native";
 import "../global.css";
 import { ConvexProvider, convex } from "../lib/convex";
 
@@ -42,6 +43,7 @@ export default function RootLayout() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
+      <ToastManager />
       <ClerkProvider tokenCache={tokenCache} publishableKey={publishableKey}>
         <ConvexProvider client={convex}>
           <SafeAreaProvider className="bg-white">

@@ -2,7 +2,8 @@ import { api } from "@/convex/_generated/api";
 import { useQuery } from "convex/react";
 import moment from "moment";
 import React, { useState } from "react";
-import { Text, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
+import { AppText } from "./AppText";
 import CircularProgressRing from "./CircularProgressRing";
 
 interface CircularNutritionSummaryProps {
@@ -95,15 +96,15 @@ export default function CircularNutritionSummary({
       label: "Calories",
       current: dailyTotals.calories,
       goal: userGoals?.calorieGoal || 0,
-      color: "#3b82f6", // Blue
-      unit: "kcal",
+      color: "#121212", // Blue
+      unit: "",
     },
     {
       key: "protein",
       label: "Protein",
       current: dailyTotals.protein,
       goal: userGoals?.proteinGoal || 0,
-      color: "#10b981", // Green
+      color: "#121212", // Green
       unit: "g",
     },
     {
@@ -111,7 +112,7 @@ export default function CircularNutritionSummary({
       label: "Carbs",
       current: dailyTotals.carbs,
       goal: userGoals?.carbGoal || 0,
-      color: "#f59e0b", // Yellow
+      color: "#121212", // Yellow
       unit: "g",
     },
     {
@@ -119,7 +120,7 @@ export default function CircularNutritionSummary({
       label: "Fat",
       current: dailyTotals.fat,
       goal: userGoals?.fatGoal || 0,
-      color: "#ef4444", // Red
+      color: "#121212", // Red
       unit: "g",
     },
   ];
@@ -129,18 +130,18 @@ export default function CircularNutritionSummary({
   );
 
   return (
-    <View className="mt-4">
-      <Text className="text-lg font-semibold mb-3">
-        Daily Summary - {selectedDate.format("MMM DD, YYYY")}
-      </Text>
-
-      {/* Main Circular Progress Ring */}
-
+    <View className="mt-6">
       {/* All Nutrition Rings */}
-      <View className="bg-white rounded-lg p-4 shadow-sm border border-gray-200">
-        <Text className="text-md font-medium text-gray-700 mb-3">
-          All Nutrients
-        </Text>
+      <View
+        className="bg-white rounded-2xl px-4 py-6 border border-[#EBEBEB]"
+        style={styles.shadow}
+      >
+        <AppText className="text-md font-medium text-gray-700 mb-3">
+          {/* add condition to check if the date is today then write today summary else write  Summary of date*/}
+          {selectedDate.isSame(moment(), "day")
+            ? "Today's Summary"
+            : `Summary of ${selectedDate.format("MMM DD, YYYY")}`}
+        </AppText>
         <View className="flex-row justify-around">
           {nutritionData.map((item) => (
             <View key={item.key} className="items-center">
@@ -154,7 +155,9 @@ export default function CircularNutritionSummary({
                 value={`${Math.round(item.current)}`}
                 label={item.unit}
               />
-              <Text className="text-xs text-gray-600 mt-1">{item.label}</Text>
+              <AppText className="text-xs text-gray-600 mt-1">
+                {item.label}
+              </AppText>
             </View>
           ))}
         </View>
@@ -162,3 +165,17 @@ export default function CircularNutritionSummary({
     </View>
   );
 }
+
+// make a style for shadow class
+const styles = StyleSheet.create({
+  shadow: {
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 10,
+    },
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    elevation: 8,
+  },
+});
