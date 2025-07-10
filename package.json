@@ -40,6 +40,7 @@
     "expo-router": "~5.1.1",
     "expo-screen-orientation": "~8.1.7",
     "expo-secure-store": "^14.2.3",
+    "expo-skeleton-loading": "^1.0.9",
     "expo-splash-screen": "~0.30.10",
     "expo-status-bar": "~2.2.3",
     "expo-symbols": "~0.4.5",

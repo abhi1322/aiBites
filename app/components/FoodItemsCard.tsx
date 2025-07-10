@@ -1,9 +1,11 @@
 import { api } from "@/convex/_generated/api";
 import { useQuery } from "convex/react";
 import { useRouter } from "expo-router";
+import LottieView from "lottie-react-native";
 import moment from "moment";
 import React from "react";
 import { Image, Text, TouchableOpacity, View } from "react-native";
+import { AppText } from "./AppText";
 
 interface FoodItemsCardProps {
   userId: string;
@@ -30,18 +32,52 @@ export default function FoodItemsCard({
 
   if (!foodItems) {
     return (
-      <View className="bg-gray-100 rounded-lg p-4 mt-4">
-        <Text className="text-gray-500 text-center">Loading food items...</Text>
+      <View className="bg-white relative w-[80vw] mx-auto">
+        <LottieView
+          source={require("@/assets/lottie/Loading-Animation.json")}
+          autoPlay
+          loop
+          style={{ width: 300, height: 300 }}
+        />
+        <AppText
+          style={{
+            color: "#ccdc",
+            fontSize: 16,
+            fontWeight: "bold",
+            textAlign: "center",
+            position: "absolute",
+            bottom: 0,
+            left: 0,
+            right: 0,
+            marginBottom: 50,
+          }}
+        >
+          Loading food items...
+        </AppText>
       </View>
     );
   }
 
   if (foodItems.length === 0) {
     return (
-      <View className="bg-gray-100 rounded-lg p-4 mt-4">
-        <Text className="text-gray-500 text-center">
-          No food items logged for {selectedDate.format("MMM DD, YYYY")}
-        </Text>
+      <View className="min-h-96 flex-col items-center justify-center rounded-lg p-4 mt-4">
+        <AppText className="text-lg font-semibold mb-3 text-center text-neutral-600">
+          Food Logged for{" "}
+          {selectedDate.isSame(new Date(), "day")
+            ? "Today"
+            : selectedDate.format("MMM DD, YYYY")}
+        </AppText>
+        <LottieView
+          source={require("@/assets/lottie/Empty-box.json")}
+          autoPlay
+          loop
+          style={{ width: 200, height: 200 }}
+        />
+        <AppText className="-mt-[40%] text-gray-400 text-center text-sm w-[60vw]">
+          {selectedDate.isSame(new Date(), "day")
+            ? "No food items logged for today, Add Now to keep track of your calories and macros"
+            : `No food items logged for ${selectedDate.format("MMM DD, YYYY")}`}
+        </AppText>
       </View>
     );
   }
