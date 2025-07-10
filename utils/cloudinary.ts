@@ -44,8 +44,8 @@ export async function uploadToCloudinary(localUri: string) {
     const result = await res.json();
     console.log("Upload result:", result);
 
-    // Return the public_id instead of secure_url
-    return result.public_id;
+    // Return the secure_url (Cloudinary image URL) directly
+    return result.secure_url;
   } catch (error) {
     console.error("Error uploading to Cloudinary:", error);
     throw error;
@@ -104,6 +104,23 @@ export function extractPublicIdFromUrl(secureUrl: string): string {
   }
 
   return publicId;
+}
+
+/**
+ * Uploads an image to Cloudinary and returns a compressed/optimized URL for profile pictures.
+ * @param localUri - The local file URI of the image
+ * @returns The compressed Cloudinary image URL (suitable for profile pictures)
+ */
+export async function uploadProfilePictureToCloudinary(
+  localUri: string
+): Promise<string> {
+  // Upload and get the secure_url (original)
+  const secureUrl = await uploadToCloudinary(localUri);
+  // Extract public_id from the secure_url
+  const publicId = extractPublicIdFromUrl(secureUrl);
+  // Get the compressed URL
+  const { compressedUrl } = getCloudinaryImageUrls(publicId);
+  return compressedUrl;
 }
 
 // Debug function to test configuration

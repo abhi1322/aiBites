@@ -14,13 +14,14 @@ export const HeightStep: React.FC<HeightStepProps> = ({
   height,
   updateHeight,
 }) => {
-  const [localHeight, setLocalHeight] = useState(height);
+  const [localHeight, setLocalHeight] = useState(height || "150");
 
   useEffect(() => {
-    if (height) {
+    if (!height) {
       setLocalHeight("150");
+      updateHeight("150");
     }
-  }, [height]);
+  }, []);
 
   return (
     <ScrollView>

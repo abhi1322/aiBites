@@ -5,7 +5,8 @@ import { router } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { Alert } from "react-native";
 import { api } from "../../convex/_generated/api";
-import { StepType } from "../components/profile-setup/ProgressBar";
+import { uploadProfilePictureToCloudinary } from "../../utils/cloudinary";
+import type { StepType } from "../components/profile-setup";
 
 // Profile data interface
 interface ProfileData {
@@ -118,6 +119,7 @@ export const useProfileSetup = () => {
     });
 
     if (!result.canceled && result.assets[0]) {
+      // Only set the local URI for preview
       updateProfileData({ profileImage: result.assets[0].uri });
     }
   };
@@ -191,6 +193,16 @@ export const useProfileSetup = () => {
     setIsLoading(true);
 
     try {
+      let profileImageUrl = profileData.profileImage;
+      // If the image is a local URI (starts with file:// or content://), upload to Cloudinary
+      if (
+        profileImageUrl &&
+        (profileImageUrl.startsWith("file://") ||
+          profileImageUrl.startsWith("content://"))
+      ) {
+        profileImageUrl =
+          await uploadProfilePictureToCloudinary(profileImageUrl);
+      }
       const result = await createOrUpdateUser({
         clerkId: user?.id!,
         email: user?.primaryEmailAddress?.emailAddress ?? "",
@@ -198,8 +210,11 @@ export const useProfileSetup = () => {
         lastName: profileData.lastName.trim(),
         height: Number(profileData.height),
         weight: profileData.weight,
-        gender: profileData.gender || undefined,
-        calorieGoal: Number(profileData.calorieGoal),
+        gender: profileData.gender ?? undefined,
+        dateOfBirth: profileData.dateOfBirth.getTime(),
+        calorieGoal: profileData.calorieGoal
+          ? Number(profileData.calorieGoal)
+          : undefined,
         proteinGoal: profileData.proteinGoal
           ? Number(profileData.proteinGoal)
           : undefined,
@@ -207,8 +222,7 @@ export const useProfileSetup = () => {
           ? Number(profileData.carbGoal)
           : undefined,
         fatGoal: profileData.fatGoal ? Number(profileData.fatGoal) : undefined,
-        dateOfBirth: profileData.dateOfBirth.getTime(),
-        profileCompleted: true,
+        profileImage: profileImageUrl,
       });
 
       console.log("Profile completion result:", result);

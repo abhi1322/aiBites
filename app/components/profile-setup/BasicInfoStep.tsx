@@ -41,6 +41,8 @@ export const BasicInfoStep: React.FC<BasicInfoStepProps> = ({
     { label: "Other", value: "other" },
   ]);
 
+  console.log("Profile image URL:", profileData.profileImage);
+
   return (
     <View className="space-y-6">
       <View className="text-center">

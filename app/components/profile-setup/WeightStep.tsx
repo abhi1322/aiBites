@@ -16,6 +16,13 @@ export const WeightStep: React.FC<WeightStepProps> = ({
   const [localWeight, setLocalWeight] = useState(weight);
 
   useEffect(() => {
+    if (!weight) {
+      setLocalWeight(70);
+      updateWeight(70);
+    }
+  }, []);
+
+  useEffect(() => {
     setLocalWeight(weight); // Sync if parent changes
   }, [weight]);
 
