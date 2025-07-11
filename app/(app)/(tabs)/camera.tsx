@@ -1,11 +1,16 @@
+import { AppText } from "@/app/components/AppText";
+import { LightButton } from "@/app/components/ui/Button";
+import Ionicons from "@expo/vector-icons/Ionicons";
 import { useNavigation } from "@react-navigation/native";
 import { CameraView, useCameraPermissions } from "expo-camera";
+import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import * as ScreenOrientation from "expo-screen-orientation";
 import React, { useRef, useState } from "react";
 import {
   Alert,
   Dimensions,
+  Image,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -116,19 +121,66 @@ export default function CameraScreen() {
         onCameraReady={handleCameraReady}
       />
       {/* Back button overlay */}
-      <TouchableOpacity
-        style={styles.backButton}
-        onPress={() => navigation.navigate("home" as never)}
-      >
-        <Text style={styles.backButtonText}>Back</Text>
-      </TouchableOpacity>
+
+      <View className=" h-16 w-20 absolute top-14 left-8">
+        <LightButton
+          onPress={() => navigation.navigate("home" as never)}
+          icon={<Ionicons name="arrow-back" size={20} color={"#C0C0C0"} />}
+        />
+      </View>
+
       {/* Capture Button overlay at bottom center */}
-      <TouchableOpacity
-        onPress={takePicture}
-        style={styles.captureButtonAbsolute}
-      >
-        <Text style={styles.captureButtonText}>Take Picture</Text>
-      </TouchableOpacity>
+
+      <View className="absolute bottom-[10%] ">
+        <TouchableOpacity
+          onPress={takePicture}
+          className="border border-[#2D2D2D] rounded-full"
+          activeOpacity={0.9}
+          style={{
+            display: "flex",
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "center",
+            backgroundColor: "transparent",
+            width: 180,
+            height: 60,
+            borderRadius: 30,
+            shadowColor: "#000000",
+            shadowOffset: {
+              width: 0,
+              height: 10,
+            },
+            shadowOpacity: 0.3,
+            shadowRadius: 20,
+          }}
+        >
+          <LinearGradient
+            colors={["#202020", "#121212"]}
+            start={{ x: 0, y: 0.5 }}
+            end={{ x: 0, y: 1 }}
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              width: "100%",
+              height: "100%",
+              borderRadius: 30,
+            }}
+            className=""
+          />
+          <Image
+            source={require("@/assets/icons/scan-camera.png")}
+            className="w-8 h-8 mr-1 "
+            resizeMode="contain"
+            style={{ zIndex: 1 }}
+          />
+          <AppText className="text-[#CDCDCD] capitalize" style={{ zIndex: 1 }}>
+            Scan your meal
+          </AppText>
+        </TouchableOpacity>
+      </View>
+
+
     </View>
   );
 }

@@ -1,6 +1,5 @@
 import { Cloudinary } from "@cloudinary/url-gen";
-import { format, quality } from "@cloudinary/url-gen/actions/delivery";
-import { scale } from "@cloudinary/url-gen/actions/resize";
+import { fill } from "@cloudinary/url-gen/actions/resize";
 
 // Example function to upload an image from React Native
 export async function uploadToCloudinary(localUri: string) {
@@ -52,42 +51,131 @@ export async function uploadToCloudinary(localUri: string) {
   }
 }
 
-// Utility to generate original and compressed URLs
-export function getCloudinaryImageUrls(publicId: string) {
-  console.log("Generating URLs for publicId:", publicId);
+// Utility to generate original and square URLs (JPG only, no compression)
+
+export function getCloudinaryImageUrls(publicIdOrUrl: string) {
+  console.log("Generating URLs for publicIdOrUrl:", publicIdOrUrl);
 
   const cloudName = process.env.EXPO_PUBLIC_CLOUDINARY_CLOUD_NAME;
   if (!cloudName) {
     throw new Error("EXPO_PUBLIC_CLOUDINARY_CLOUD_NAME is not set");
   }
 
-  const cld = new Cloudinary({
-    cloud: { cloudName },
-  });
+  // Extract public ID from full URL if needed
+  const publicId = extractPublicId(publicIdOrUrl);
+  console.log("Extracted publicId:", publicId);
 
-  // Original (with some optimization)
-  const original = cld
-    .image(publicId)
-    .delivery(format("auto"))
-    .delivery(quality("auto"));
+  // Method 1: Using Cloudinary SDK (if available)
+  try {
+    const cld = new Cloudinary({
+      cloud: { cloudName },
+    });
 
-  // Compressed: resize and lower quality
-  const compressed = cld
-    .image(publicId)
-    .resize(scale().width(400))
-    .delivery(quality("auto:low"))
-    .delivery(format("auto")); // Use 'auto' instead of 'webp' for better compatibility
+    // Original: just the original image as JPG
+    const original = cld.image(publicId).format("jpg");
 
-  const originalUrl = original.toURL();
-  const compressedUrl = compressed.toURL();
+    // Square: resize and crop to 400x400 JPG
+    const square = cld
+      .image(publicId)
+      .resize(fill().width(400).height(400))
+      .format("jpg");
 
-  console.log("Generated originalUrl:", originalUrl);
-  console.log("Generated compressedUrl:", compressedUrl);
+    const originalUrl = original.toURL();
+    const squareUrl = square.toURL();
+
+    console.log("Generated originalUrl:", originalUrl);
+    console.log("Generated squareUrl:", squareUrl);
+
+    return {
+      originalUrl,
+      squareUrl,
+    };
+  } catch (error) {
+    console.warn(
+      "Cloudinary SDK failed, falling back to manual URL construction:",
+      error
+    );
+
+    // Method 2: Manual URL construction (fallback)
+    const originalUrl = `https://res.cloudinary.com/${cloudName}/image/upload/f_jpg/${publicId}`;
+    const squareUrl = `https://res.cloudinary.com/${cloudName}/image/upload/c_fill,h_400,w_400,f_jpg/${publicId}`;
+
+    console.log("Generated originalUrl (manual):", originalUrl);
+    console.log("Generated squareUrl (manual):", squareUrl);
+
+    return {
+      originalUrl,
+      squareUrl,
+    };
+  }
+}
+
+function extractPublicId(publicIdOrUrl: string): string {
+  // If it's already just a public ID (no http/https), return as is
+  if (!publicIdOrUrl.startsWith("http")) {
+    return publicIdOrUrl;
+  }
+
+  try {
+    const url = new URL(publicIdOrUrl);
+    const pathname = url.pathname;
+
+    // Cloudinary URL pattern: /image/upload/[transformations]/[version]/[public_id].[extension]
+    // We need to extract everything after the last occurrence of /upload/
+    const uploadIndex = pathname.lastIndexOf("/upload/");
+    if (uploadIndex === -1) {
+      throw new Error("Invalid Cloudinary URL format");
+    }
+
+    // Get everything after /upload/
+    let pathAfterUpload = pathname.substring(uploadIndex + 8); // 8 = length of '/upload/'
+
+    // Remove version if present (starts with v followed by numbers)
+    pathAfterUpload = pathAfterUpload.replace(/^v\d+\//, "");
+
+    // Remove file extension
+    const lastDotIndex = pathAfterUpload.lastIndexOf(".");
+    if (lastDotIndex !== -1) {
+      pathAfterUpload = pathAfterUpload.substring(0, lastDotIndex);
+    }
+
+    return pathAfterUpload;
+  } catch (error) {
+    console.error("Error extracting public ID from URL:", error);
+    throw new Error(`Invalid Cloudinary URL: ${publicIdOrUrl}`);
+  }
+}
+
+// Alternative: Pure manual URL construction (most reliable)
+export function getCloudinaryImageUrlsManual(publicIdOrUrl: string) {
+  const cloudName = process.env.EXPO_PUBLIC_CLOUDINARY_CLOUD_NAME;
+  if (!cloudName) {
+    throw new Error("EXPO_PUBLIC_CLOUDINARY_CLOUD_NAME is not set");
+  }
+
+  const publicId = extractPublicId(publicIdOrUrl);
+
+  // Manual URL construction - this is the most reliable approach
+  const originalUrl = `https://res.cloudinary.com/${cloudName}/image/upload/${publicId}`;
+  const squareUrl = `https://res.cloudinary.com/${cloudName}/image/upload/c_fill,h_400,w_400/${publicId}`;
 
   return {
     originalUrl,
-    compressedUrl,
+    squareUrl,
   };
+}
+
+// Test function to verify URLs work
+export async function testCloudinaryUrls(publicIdOrUrl: string) {
+  const { originalUrl, squareUrl } =
+    getCloudinaryImageUrlsManual(publicIdOrUrl);
+
+  console.log("Testing URLs:");
+  console.log("Original:", originalUrl);
+  console.log("Square:", squareUrl);
+
+  // You can use these URLs to test in browser or with fetch
+  return { originalUrl, squareUrl };
 }
 
 // Alternative: Extract public_id from secure_url if you prefer to keep returning secure_url
@@ -131,10 +219,10 @@ export function debugCloudinaryConfig() {
   // Test URL generation with a sample public_id
   if (process.env.EXPO_PUBLIC_CLOUDINARY_CLOUD_NAME) {
     try {
-      const { originalUrl, compressedUrl } = getCloudinaryImageUrls("sample");
+      const { originalUrl, squareUrl } = getCloudinaryImageUrls("sample");
       console.log("Test URLs generated successfully");
       console.log("Test original:", originalUrl);
-      console.log("Test compressed:", compressedUrl);
+      console.log("Test square:", squareUrl);
     } catch (error) {
       console.error("Error generating test URLs:", error);
     }

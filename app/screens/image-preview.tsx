@@ -5,19 +5,14 @@ import {
   uploadToCloudinary,
 } from "@/utils/cloudinary";
 import { useUser } from "@clerk/clerk-expo";
+import Ionicons from "@expo/vector-icons/Ionicons";
 import axios from "axios";
 import { useMutation } from "convex/react";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import { Repeat } from "lucide-react-native";
 import React, { useEffect, useState } from "react";
-import {
-  Alert,
-  Dimensions,
-  Image,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { Alert, Dimensions, Image, StyleSheet, Text, View } from "react-native";
+import { DarkButton, LightButton } from "../components/ui/Button";
 import { useFoodAnalysis } from "../hooks/useFoodAnalysis";
 import { convertVisionResponseToFoodItem } from "../utils/foodAnalysisUtils";
 
@@ -85,10 +80,10 @@ export default function ImagePreviewScreen() {
       }
 
       // 2. Generate URLs using the public_id
-      const { originalUrl, compressedUrl } = getCloudinaryImageUrls(publicId);
+      const { originalUrl, squareUrl } = getCloudinaryImageUrls(publicId);
       console.log("Generated URLs:");
       console.log("originalUrl:", originalUrl);
-      console.log("compressedUrl:", compressedUrl);
+      console.log("squareUrl:", squareUrl);
 
       // // 3. Analyze food image using AI
       // console.log("Analyzing food image...");
@@ -124,7 +119,7 @@ export default function ImagePreviewScreen() {
       const foodItemData = convertVisionResponseToFoodItem(
         visionResult,
         originalUrl,
-        compressedUrl,
+        squareUrl,
         user?.id || "unknown-user",
         false // Not custom, from vision analysis
       );
@@ -215,16 +210,39 @@ export default function ImagePreviewScreen() {
       </View> */}
 
       {/* Retake Button */}
-      <TouchableOpacity
-        style={styles.retakeButton}
-        onPress={() => router.replace("../(tabs)/camera")}
-        disabled={isLoading || isAnalyzing}
-      >
-        <Text style={styles.buttonText}>Retake</Text>
-      </TouchableOpacity>
+
+      <View className="absolute w-20 h-16 bottom-16 left-8">
+        <LightButton
+          onPress={() => router.replace("../(tabs)/camera")}
+          icon={<Repeat color={"#C0C0C0"} />}
+        />
+      </View>
 
       {/* Next Button */}
-      <TouchableOpacity
+
+      <View className=" h-16 w-44 right-8 absolute bottom-16">
+        <DarkButton
+          iconPosition="right"
+          icon={
+            <Ionicons
+              name="arrow-forward-circle"
+              size={24}
+              color={"#EBEBEB"}
+              className="text-neutral-400"
+            />
+          }
+          onPress={handleNext}
+          disabled={isLoading || isAnalyzing}
+        >
+          {isLoading || isAnalyzing
+            ? isAnalyzing
+              ? "Analyzing..."
+              : "Uploading..."
+            : "Next"}
+        </DarkButton>
+      </View>
+
+      {/* <TouchableOpacity
         style={[
           styles.nextButton,
           (isLoading || isAnalyzing) && styles.disabledButton,
@@ -239,7 +257,7 @@ export default function ImagePreviewScreen() {
               : "Uploading..."
             : "Next"}
         </Text>
-      </TouchableOpacity>
+      </TouchableOpacity> */}
     </View>
   );
 }

@@ -56,6 +56,7 @@ export default function TabsLayout() {
               accessibilityLabel={props.accessibilityLabel}
               testID={props.testID}
               className="border border-[#2D2D2D] rounded-full"
+              activeOpacity={0.9}
               style={{
                 display: "flex",
                 flexDirection: "row",
