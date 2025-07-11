@@ -11,6 +11,7 @@ export default function TabsLayout() {
     <Tabs
       screenOptions={({ route }) => ({
         headerShown: false,
+        
         tabBarStyle: {
           position: "relative",
           height: 90,

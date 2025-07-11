@@ -92,14 +92,14 @@ export default function HomeScreen() {
   // console.log("user?.id", user?.id);
 
   return (
-    <SafeAreaView className="flex-1 bg-white">
+    <SafeAreaView className="flex-1 h-[100%] bg-white">
       <CalendarStripComponent
         selectedDate={selectedDate}
         onDateChange={handleDateChange}
       />
       <ScrollView
         showsVerticalScrollIndicator={false}
-        className="flex-1 px-4"
+        className="flex-1 px-4 min-h-[100%]"
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -125,7 +125,7 @@ export default function HomeScreen() {
 
         {/* Food Items for Selected Date */}
         {clerkID && (
-          <View>
+          <View className="h-[100%]">
             <CircularNutritionSummary
               userId={clerkID}
               selectedDate={selectedDate}

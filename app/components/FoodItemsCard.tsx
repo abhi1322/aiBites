@@ -4,8 +4,13 @@ import { useRouter } from "expo-router";
 import LottieView from "lottie-react-native";
 import moment from "moment";
 import React, { useEffect, useState } from "react";
-import { Image, Text, TouchableOpacity, View } from "react-native";
+import { Image, StyleSheet, TouchableOpacity, View } from "react-native";
 import { AppText } from "./AppText";
+
+import Calorie from "@/assets/icons/calories.svg";
+import Carbs from "@/assets/icons/carbs.svg";
+import Fat from "@/assets/icons/fat-icon.svg";
+import Protein from "@/assets/icons/protein.svg";
 
 interface FoodItemsCardProps {
   userId: string;
@@ -103,12 +108,15 @@ export default function FoodItemsCard({
   }
 
   return (
-    <View className="mt-4">
-      <Text className="text-lg font-semibold mb-3">
-        Food Items for {selectedDate.format("MMM DD, YYYY")}
-      </Text>
+    <View className="mt-8">
+      <AppText className="text-lg font-semibold mb-3 text-center text-neutral-700">
+        Food Logged for{" "}
+        {selectedDate.isSame(new Date(), "day")
+          ? "Today"
+          : selectedDate.format("MMM DD, YYYY")}
+      </AppText>
 
-      <View className="space-y-2">
+      <View className="gap-4">
         {foodItems.map((foodItem) => (
           <FoodItemCard key={foodItem._id} foodItem={foodItem} />
         ))}
@@ -126,8 +134,8 @@ function FoodItemCard({ foodItem }: FoodItemCardProps) {
 
   if (!foodItem) {
     return (
-      <View className="bg-gray-100 rounded-lg p-3">
-        <Text className="text-gray-500">Loading food details...</Text>
+      <View className="bg-gray-100 rounded-2xl border border-[#EBEBEB] p-2">
+        <AppText className="text-gray-500">Loading food details...</AppText>
       </View>
     );
   }
@@ -141,45 +149,82 @@ function FoodItemCard({ foodItem }: FoodItemCardProps) {
 
   return (
     <TouchableOpacity
-      className="bg-white rounded-lg p-3 shadow-sm border border-gray-200"
+      className="bg-white rounded-2xl border border-[#EBEBEB] p-2"
       onPress={handlePress}
+      style={styles.shadow}
     >
-      <View className="flex-row items-center space-x-3">
+      <View className="flex-row items-start gap-4">
         {/* Food Image */}
         {foodItem.compressedImageUrl && (
           <Image
             source={{ uri: foodItem.compressedImageUrl }}
-            className="w-12 h-12 rounded-lg"
+            className="w-28 h-28 rounded-xl "
             resizeMode="cover"
           />
         )}
 
         {/* Food Details */}
-        <View className="flex-1">
-          <Text className="font-medium text-gray-900" numberOfLines={1}>
+        <View className="flex-1 items-start">
+          <AppText
+            tweight="medium"
+            className="font-medium text-neutral-700 capitalize text-lg"
+            numberOfLines={1}
+          >
             {foodItem.name}
-          </Text>
-          <Text className="text-sm text-gray-500">
-            1 serving • {foodItem.servingSize}
-          </Text>
+          </AppText>
+          <AppText className="text-sm text-neutral-500 capitalize">
+            Serving Size: {foodItem.servingSize}
+          </AppText>
 
           {/* Nutrition Info */}
-          <View className="flex-row mt-1 space-x-3">
-            <Text className="text-xs text-gray-600">
-              {foodItem.calories?.total || 0} kcal
-            </Text>
-            <Text className="text-xs text-gray-600">
-              P: {foodItem.protein || 0}g
-            </Text>
-            <Text className="text-xs text-gray-600">
-              C: {foodItem.carbs || 0}g
-            </Text>
-            <Text className="text-xs text-gray-600">
-              F: {foodItem.fat || 0}g
-            </Text>
+          {/* in grid  */}
+          <View className="flex-row gap-8 mt-2">
+            <View className="flex-col gap-2">
+              <View className="flex-row items-center gap-2 justify-start">
+                <Calorie />
+                <AppText className="text-xs text-gray-600">
+                  {foodItem.calories?.total || 0} kcal
+                </AppText>
+              </View>
+              <View className="flex-row items-center gap-2 justify-start">
+                <Protein />
+                <AppText className="text-xs text-gray-600">
+                  P: {foodItem.protein || 0}g
+                </AppText>
+              </View>
+            </View>
+            <View className="flex-col gap-2">
+              <View className="flex-row items-center gap-2 justify-start">
+                <Carbs />
+                <AppText className="text-xs text-gray-600">
+                  C: {foodItem.carbs || 0}g
+                </AppText>
+              </View>
+              <View className="flex-row items-center gap-2 justify-start">
+                <Fat />
+                <AppText className="text-xs text-gray-600">
+                  {"  "}
+                  F: {foodItem.fat || 0}g
+                </AppText>
+              </View>
+            </View>
           </View>
         </View>
       </View>
     </TouchableOpacity>
   );
 }
+
+// make a style for shadow class
+const styles = StyleSheet.create({
+  shadow: {
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 10,
+    },
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    elevation: 8,
+  },
+});

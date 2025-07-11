@@ -6,6 +6,8 @@ Notifications.setNotificationHandler({
     shouldShowAlert: true,
     shouldPlaySound: true,
     shouldSetBadge: false,
+    shouldShowBanner: true,
+    shouldShowList: true,
   }),
 });
 
@@ -69,6 +71,7 @@ export class NotificationService {
         hour: hours,
         minute: minutes,
         repeats: true,
+        type: "calendar",
       },
     });
 
@@ -88,10 +91,12 @@ export class NotificationService {
         data: { type: "daily_reminder" },
         sound: "default",
       },
+
       trigger: {
         hour: 20, // 8 PM
         minute: 0,
         repeats: true,
+        type: "calendar",
       },
     });
 
