@@ -1,8 +1,10 @@
 import { api } from "@/convex/_generated/api";
 import { useQuery } from "convex/react";
 import moment from "moment";
+import { MotiView } from "moti";
+import { Skeleton } from "moti/skeleton";
 import React, { useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 import { AppText } from "./AppText";
 import CircularProgressRing from "./CircularProgressRing";
 
@@ -56,14 +58,48 @@ export default function CircularNutritionSummary({
 
   if (!foodItems) {
     return (
-      <View className="bg-gray-100 rounded-lg p-4 mt-4">
-        <Text className="text-gray-500 text-center">
-          Loading nutrition data...
-        </Text>
+      <View className="bg-[#f3f3f3] rounded-lg p-4 mt-4">
+        <MotiView
+          transition={{ type: "timing" }}
+          style={{
+            flexDirection: "row",
+            justifyContent: "center",
+            alignItems: "center",
+            marginVertical: 24,
+          }}
+        >
+          <Skeleton
+            colorMode={"light"}
+            colors={["#e8e8e8", "#fff"]}
+            radius={37.5}
+            height={75}
+            width={75}
+          />
+          <View style={{ width: 16 }} />
+          <Skeleton
+            colors={["#e8e8e8", "#fff"]}
+            radius={37.5}
+            height={75}
+            width={75}
+          />
+          <View style={{ width: 16 }} />
+          <Skeleton
+            colors={["#e8e8e8", "#fff"]}
+            radius={37.5}
+            height={75}
+            width={75}
+          />
+          <View style={{ width: 16 }} />
+          <Skeleton
+            colors={["#e8e8e8", "#fff"]}
+            radius={37.5}
+            height={75}
+            width={75}
+          />
+        </MotiView>
       </View>
     );
   }
-
   // Calculate daily totals
   const dailyTotals = foodItems.reduce(
     (totals, foodItem) => {

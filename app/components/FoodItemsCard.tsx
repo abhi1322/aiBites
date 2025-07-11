@@ -3,7 +3,7 @@ import { useQuery } from "convex/react";
 import { useRouter } from "expo-router";
 import LottieView from "lottie-react-native";
 import moment from "moment";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Image, Text, TouchableOpacity, View } from "react-native";
 import { AppText } from "./AppText";
 
@@ -16,6 +16,7 @@ export default function FoodItemsCard({
   userId,
   selectedDate,
 }: FoodItemsCardProps) {
+  const [showLoading, setShowLoading] = useState(true);
   const dateString = selectedDate.format("YYYY-MM-DD");
 
   console.log("FoodItemsCard - userId:", userId);
@@ -27,12 +28,27 @@ export default function FoodItemsCard({
     date: dateString,
   });
 
+  useEffect(() => {
+    setShowLoading(true);
+    const timer = setTimeout(() => {
+      setShowLoading(false);
+    }, 1000); // 1000ms delay, adjust as needed
+
+    return () => clearTimeout(timer);
+  }, [userId, dateString, foodItems]);
+
   console.log("FoodItemsCard - foodItems:", foodItems);
   console.log("FoodItemsCard - foodItems length:", foodItems?.length);
 
-  if (!foodItems) {
+  if (!foodItems || showLoading) {
     return (
-      <View className="bg-white relative w-[80vw] mx-auto">
+      <View className="bg-white relative w-[80vw] mx-auto mt-4">
+        <AppText className="text-lg font-semibold mb-3 text-center text-neutral-700">
+          Food Logged for{" "}
+          {selectedDate.isSame(new Date(), "day")
+            ? "Today"
+            : selectedDate.format("MMM DD, YYYY")}
+        </AppText>
         <LottieView
           source={require("@/assets/lottie/Loading-Animation.json")}
           autoPlay
@@ -59,21 +75,25 @@ export default function FoodItemsCard({
   }
 
   if (foodItems.length === 0) {
+    const lottieSource = selectedDate.isSame(new Date(), "day")
+      ? require("@/assets/lottie/Empty-box.json")
+      : require("@/assets/lottie/no-data.json");
+
     return (
-      <View className="min-h-96 flex-col items-center justify-center rounded-lg p-4 mt-4">
-        <AppText className="text-lg font-semibold mb-3 text-center text-neutral-600">
+      <View className="min-h-96 flex-col items-center  rounded-lg p-4 mt-4">
+        <AppText className="text-lg font-semibold mb-3 text-center text-neutral-700">
           Food Logged for{" "}
           {selectedDate.isSame(new Date(), "day")
             ? "Today"
             : selectedDate.format("MMM DD, YYYY")}
         </AppText>
         <LottieView
-          source={require("@/assets/lottie/Empty-box.json")}
+          source={lottieSource}
           autoPlay
           loop
           style={{ width: 200, height: 200 }}
         />
-        <AppText className="-mt-[40%] text-gray-400 text-center text-sm w-[60vw]">
+        <AppText className="text-gray-400 text-center text-sm w-[70vw]">
           {selectedDate.isSame(new Date(), "day")
             ? "No food items logged for today, Add Now to keep track of your calories and macros"
             : `No food items logged for ${selectedDate.format("MMM DD, YYYY")}`}

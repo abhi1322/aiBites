@@ -1,7 +1,44 @@
+import { AppText } from "@/app/components/AppText";
 import { BottomTabBarProps } from "@react-navigation/bottom-tabs";
 import { Camera, Home, User } from "lucide-react-native";
 import React from "react";
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { StyleSheet, TouchableOpacity, View } from "react-native";
+
+// Custom Camera Button component for the camera tab
+interface CameraButtonProps {
+  onPress: () => void;
+  onLongPress?: () => void;
+  isFocused: boolean;
+}
+function CameraButton({ onPress, onLongPress, isFocused }: CameraButtonProps) {
+  return (
+    <TouchableOpacity
+      onPress={onPress}
+      onLongPress={onLongPress}
+      style={{
+        // Change the background color of the camera button here
+        backgroundColor: isFocused ? "#FF6347" : "#000", // <-- CAMERA BUTTON COLORS
+        borderRadius: 40,
+        width: 70,
+        height: 70,
+        marginTop: -30,
+        justifyContent: "center",
+        alignItems: "center",
+        shadowColor: "#000",
+        shadowOpacity: 0.3,
+        shadowRadius: 10,
+        shadowOffset: { width: 0, height: 4 },
+        elevation: 8,
+        borderWidth: isFocused ? 3 : 0,
+        borderColor: isFocused ? "#FFF" : "transparent", // <-- CAMERA BUTTON BORDER COLOR
+      }}
+      activeOpacity={0.8}
+    >
+      {/* Change the camera icon color here */}
+      <Camera color="#FFF" size={36} />
+    </TouchableOpacity>
+  );
+}
 
 export default function CustomTabBar({
   state,
@@ -52,6 +89,22 @@ export default function CustomTabBar({
           });
         };
 
+        // Custom rendering for the camera tab
+        if (isCamera) {
+          return (
+            <CameraButton
+              key={route.key}
+              onPress={onPress}
+              onLongPress={onLongPress}
+              isFocused={isFocused}
+            />
+          );
+        }
+
+        // Change the icon color and size for focused/unfocused state here
+        const iconColor = isFocused ? "#FF6347" : "#A8A8A8"; // <-- FOCUSED ICON COLOR
+        const iconSize = isFocused ? 34 : 28; // <-- FOCUSED ICON SIZE
+
         return (
           <TouchableOpacity
             key={route.key}
@@ -60,22 +113,16 @@ export default function CustomTabBar({
             accessibilityLabel={options.tabBarAccessibilityLabel}
             onPress={onPress}
             onLongPress={onLongPress}
-            style={[
-              styles.tab,
-              isCamera && styles.cameraTab,
-              isFocused && !isCamera && styles.focusedTab,
-            ]}
+            style={[styles.tab, isFocused && styles.focusedTab]}
             activeOpacity={0.7}
           >
-            <Icon
-              color={isCamera ? "#fff" : isFocused ? "#07a" : "#000"}
-              size={28}
-            />
-            {!isCamera && (
-              <Text style={[styles.label, isFocused && styles.focusedLabel]}>
-                {label as string}
-              </Text>
-            )}
+            <Icon color={iconColor} size={iconSize} />
+            <AppText
+              style={[styles.label, isFocused && styles.focusedLabel]}
+              className="text-neutral-700 text-sm"
+            >
+              {label as string}
+            </AppText>
           </TouchableOpacity>
         );
       })}
@@ -108,7 +155,7 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   focusedLabel: {
-    color: "#07a",
+    color: "#333333",
     fontWeight: "bold",
   },
   focusedTab: {

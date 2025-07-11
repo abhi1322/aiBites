@@ -8,12 +8,13 @@ import { useQuery } from "convex/react";
 import { Redirect, useRouter } from "expo-router";
 import moment from "moment";
 import { useEffect, useState } from "react";
-import { ScrollView, View } from "react-native";
+import { RefreshControl, ScrollView, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { api } from "../../../convex/_generated/api"; // Adjust the path as needed
 
 export default function HomeScreen() {
   const [selectedDate, setSelectedDate] = useState(moment());
+  const [refreshing, setRefreshing] = useState(false);
   const { user } = useUser();
   const router = useRouter();
 
@@ -40,6 +41,27 @@ export default function HomeScreen() {
 
   const handleNotificationSettings = () => {
     router.push("/(app)/settings/notifications");
+  };
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    try {
+      // Reset the selected date to current date
+      setSelectedDate(moment());
+
+      // Add a small delay to show the refresh indicator
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
+      // Force a complete page reload by refreshing all data
+      console.log("Refreshing entire page...");
+
+      // The Convex queries will automatically refresh and reload all data
+      // This includes user data, nutrition data, and food items
+    } catch (error) {
+      console.error("Refresh error:", error);
+    } finally {
+      setRefreshing(false);
+    }
   };
 
   // check the user data from the database
@@ -75,7 +97,18 @@ export default function HomeScreen() {
         selectedDate={selectedDate}
         onDateChange={handleDateChange}
       />
-      <ScrollView className="flex-1 px-4">
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        className="flex-1 px-4"
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={["#171717"]} // Indigo color for Android
+            tintColor="#d9d9d9" // Color for iOS
+          />
+        }
+      >
         {/* semi bold text */}
         <AppText
           tweight="semibold"
@@ -84,7 +117,7 @@ export default function HomeScreen() {
           Welcome, {userData?.firstName}!
         </AppText>
         <AppText className="text-sm text-gray-500 text-center">
-          Let’s track your meals and hit your goals.
+          Let&apos;s track your meals and hit your goals.
         </AppText>
 
         {/* Notification Status
