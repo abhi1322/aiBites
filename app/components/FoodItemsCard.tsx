@@ -3,7 +3,7 @@ import { useQuery } from "convex/react";
 import { useRouter } from "expo-router";
 import LottieView from "lottie-react-native";
 import moment from "moment";
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { Image, StyleSheet, TouchableOpacity, View } from "react-native";
 import { AppText } from "./AppText";
 
@@ -21,7 +21,6 @@ export default function FoodItemsCard({
   userId,
   selectedDate,
 }: FoodItemsCardProps) {
-  const [showLoading, setShowLoading] = useState(true);
   const dateString = selectedDate.format("YYYY-MM-DD");
 
   console.log("FoodItemsCard - userId:", userId);
@@ -33,19 +32,10 @@ export default function FoodItemsCard({
     date: dateString,
   });
 
-  useEffect(() => {
-    setShowLoading(true);
-    const timer = setTimeout(() => {
-      setShowLoading(false);
-    }, 1000); // 1000ms delay, adjust as needed
-
-    return () => clearTimeout(timer);
-  }, [userId, dateString, foodItems]);
-
   console.log("FoodItemsCard - foodItems:", foodItems);
   console.log("FoodItemsCard - foodItems length:", foodItems?.length);
 
-  if (!foodItems || showLoading) {
+  if (!foodItems) {
     return (
       <View className="bg-white relative w-[80vw] mx-auto mt-4">
         <AppText className="text-lg font-semibold mb-3 text-center text-neutral-700">
@@ -54,27 +44,11 @@ export default function FoodItemsCard({
             ? "Today"
             : selectedDate.format("MMM DD, YYYY")}
         </AppText>
-        <LottieView
-          source={require("@/assets/lottie/Loading-Animation.json")}
-          autoPlay
-          loop
-          style={{ width: 300, height: 300 }}
-        />
-        <AppText
-          style={{
-            color: "#ccdc",
-            fontSize: 16,
-            fontWeight: "bold",
-            textAlign: "center",
-            position: "absolute",
-            bottom: 0,
-            left: 0,
-            right: 0,
-            marginBottom: 50,
-          }}
-        >
-          Loading food items...
-        </AppText>
+        <View className="flex-1 justify-center items-center py-8">
+          <AppText className="text-gray-500 text-center">
+            Loading food items...
+          </AppText>
+        </View>
       </View>
     );
   }

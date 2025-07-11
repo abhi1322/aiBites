@@ -91,6 +91,8 @@ export default function HomeScreen() {
   // console.log("userData", userData);
   // console.log("user?.id", user?.id);
 
+  // for testing the loading screen
+
   return (
     <SafeAreaView className="flex-1 bg-white">
       <CalendarStripComponent
