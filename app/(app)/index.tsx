@@ -1,8 +1,11 @@
 import { useUser } from "@clerk/clerk-expo";
 import { useQuery } from "convex/react";
 import { router } from "expo-router";
+import LottieView from "lottie-react-native";
 import { useEffect } from "react";
+import { View } from "react-native";
 import { api } from "../../convex/_generated/api";
+import { AppText } from "../components/AppText";
 
 export default function AppIndexRedirect() {
   const { user } = useUser();
@@ -30,5 +33,25 @@ export default function AppIndexRedirect() {
     return () => clearTimeout(timeout);
   }, [user, userData]);
 
-  return null;
+  // Show Lottie loading animation instead of skeleton
+  return (
+    <View
+      style={{
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+        backgroundColor: "white",
+      }}
+    >
+      <LottieView
+        source={require("@/assets/lottie/user_loading.json")}
+        autoPlay
+        loop
+        style={{ width: 200, height: 200 }}
+      />
+      <AppText tweight="regular" className="text-center text-neutral-400 mt-4">
+        Loading your data...
+      </AppText>
+    </View>
+  );
 }

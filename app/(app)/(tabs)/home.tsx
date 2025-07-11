@@ -6,6 +6,7 @@ import { useUser } from "@clerk/clerk-expo";
 import axios from "axios";
 import { useQuery } from "convex/react";
 import { Redirect, useRouter } from "expo-router";
+import LottieView from "lottie-react-native";
 import moment from "moment";
 import { useEffect, useState } from "react";
 import { RefreshControl, ScrollView, View } from "react-native";
@@ -83,6 +84,33 @@ export default function HomeScreen() {
   // If profile is not complete, redirect to profile setup
   if (isProfileComplete === false) {
     return <Redirect href="/profile-setup" />;
+  }
+
+  // Show loading state while userData is loading
+  if (userData === undefined) {
+    return (
+      <SafeAreaView className="flex-1 bg-white">
+        <View className="flex-1 w-full h-full items-center justify-center bg-white">
+          <LottieView
+            source={require("@/assets/lottie/user_loading.json")}
+            autoPlay
+            loop
+            style={{ width: 500, height: 500, transform: [{ scale: 4 }] }}
+            webStyle={{
+              width: 500,
+              height: 500,
+            }}
+          />
+
+          <AppText
+            tweight="regular"
+            className="text-center text-neutral-400 mt-4"
+          >
+            Loading your data...
+          </AppText>
+        </View>
+      </SafeAreaView>
+    );
   }
 
   const clerkID = userData?.clerkId;
