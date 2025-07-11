@@ -17,6 +17,8 @@ import {
   View,
 } from "react-native";
 
+import Scan from "@/assets/icons/scan.svg";
+
 export default function CameraScreen() {
   const navigation = useNavigation();
   const router = useRouter();
@@ -116,7 +118,7 @@ export default function CameraScreen() {
         }}
         ratio="4:3" // Use 16:9 to best fill the screen, but preview will always fill
         facing="back"
-        autofocus="on"
+        // autofocus="on"
         zoom={0.1}
         onCameraReady={handleCameraReady}
       />
@@ -130,6 +132,18 @@ export default function CameraScreen() {
       </View>
 
       {/* Capture Button overlay at bottom center */}
+
+      <View
+        style={{
+          position: "absolute",
+          top: "50%",
+          left: "50%",
+          transform: [{ translateX: "-50%" }, { translateY: "-50%" }],
+          zIndex: 1000,
+        }}
+      >
+        <Scan />
+      </View>
 
       <View className="absolute bottom-[10%] ">
         <TouchableOpacity
@@ -179,8 +193,6 @@ export default function CameraScreen() {
           </AppText>
         </TouchableOpacity>
       </View>
-
-
     </View>
   );
 }
