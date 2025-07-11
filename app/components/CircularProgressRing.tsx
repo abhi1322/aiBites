@@ -1,5 +1,5 @@
 import React from "react";
-import { Text, View } from "react-native";
+import { Animated, View } from "react-native";
 import Svg, { Circle } from "react-native-svg";
 import { AppText } from "./AppText";
 
@@ -24,10 +24,31 @@ export default function CircularProgressRing({
   label,
   value,
 }: CircularProgressRingProps) {
+  const [currentProgress, setCurrentProgress] = React.useState(0);
+  const animatedProgress = React.useRef(new Animated.Value(0)).current;
+
+  React.useEffect(() => {
+    Animated.timing(animatedProgress, {
+      toValue: progress,
+      duration: 1000,
+      useNativeDriver: false,
+    }).start();
+
+    // Update the state for SVG calculation
+    const listener = animatedProgress.addListener(({ value }) => {
+      setCurrentProgress(value);
+    });
+
+    return () => {
+      animatedProgress.removeListener(listener);
+    };
+  }, [progress, animatedProgress]);
+
   const radius = (size - strokeWidth) / 2;
   const circumference = radius * 2 * Math.PI;
   const strokeDasharray = circumference;
-  const strokeDashoffset = circumference - (progress / 100) * circumference;
+  const strokeDashoffset =
+    circumference - (currentProgress / 100) * circumference;
 
   return (
     <View className="items-center">
@@ -61,7 +82,7 @@ export default function CircularProgressRing({
         <View className="absolute inset-0 justify-center items-center">
           {showPercentage ? (
             <AppText className="text-lg font-bold text-gray-800">
-              {Math.round(progress)}%
+              {Math.round(currentProgress)}%
             </AppText>
           ) : (
             <View className="items-center flex-row">
