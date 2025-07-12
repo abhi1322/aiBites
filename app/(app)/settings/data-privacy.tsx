@@ -1,10 +1,33 @@
+import { AppText } from "@/app/components/AppText";
+import { SettingsCard, SettingsContainer } from "@/app/components/profile";
+import DashedSeparator from "@/app/components/ui/DashedSeparator";
+import { useUser } from "@clerk/clerk-expo";
+import { useQuery } from "convex/react";
+import * as FileSystem from "expo-file-system";
 import { useRouter } from "expo-router";
-import { ArrowLeft, Download, Eye, Shield, Trash2 } from "lucide-react-native";
+import * as Sharing from "expo-sharing";
+import { ArrowLeft, Download, Eye, Trash2 } from "lucide-react-native";
 import { useState } from "react";
-import { Alert, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import {
+  Alert,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { Toast } from "toastify-react-native";
+import { api } from "../../../convex/_generated/api";
 
 export default function DataPrivacyScreen() {
+  const { user } = useUser();
   const router = useRouter();
+  const userData = useQuery(
+    api.users.getUserByClerkId,
+    user?.id ? { clerkId: user.id } : "skip"
+  );
+
+  const [isExporting, setIsExporting] = useState(false);
   const [privacySettings, setPrivacySettings] = useState({
     shareData: false,
     analytics: true,
@@ -18,17 +41,97 @@ export default function DataPrivacyScreen() {
     }));
   };
 
-  const handleExportData = () => {
+  const convertToCSV = (data: any) => {
+    if (!data) return "";
+
+    // Create user data object
+    const userDataObj = {
+      "First Name": data.firstName || "",
+      "Last Name": data.lastName || "",
+      Email: data.email || "",
+      "Height (cm)": data.height || "",
+      "Weight (kg)": data.weight || "",
+      Gender: data.gender || "",
+      "Calorie Goal": data.calorieGoal || "",
+      "Protein Goal (g)": data.proteinGoal || "",
+      "Carb Goal (g)": data.carbGoal || "",
+      "Fat Goal (g)": data.fatGoal || "",
+      "Date of Birth": data.dateOfBirth
+        ? new Date(data.dateOfBirth).toLocaleDateString()
+        : "",
+      "Profile Completed": data.profileCompleted ? "Yes" : "No",
+      "Created At": data.createdAt
+        ? new Date(data.createdAt).toLocaleDateString()
+        : "",
+      "Updated At": data.updatedAt
+        ? new Date(data.updatedAt).toLocaleDateString()
+        : "",
+    };
+
+    const headers = Object.keys(userDataObj).join(",");
+    const values = Object.values(userDataObj)
+      .map((value) =>
+        typeof value === "string" && value.includes(",") ? `"${value}"` : value
+      )
+      .join(",");
+
+    return `${headers}\n${values}`;
+  };
+
+  const handleExportData = async () => {
+    if (!userData) {
+      Toast.error("No user data available to export");
+      return;
+    }
+
+    setIsExporting(true);
+    try {
+      // Convert user data to CSV
+      const csvContent = convertToCSV(userData);
+
+      // Create filename with timestamp
+      const timestamp = new Date().toISOString().split("T")[0];
+      const filename = `user_data_${timestamp}.csv`;
+      const fileUri = FileSystem.documentDirectory + filename;
+
+      // Write CSV file
+      await FileSystem.writeAsStringAsync(fileUri, csvContent);
+
+      // Check if sharing is available
+      const isAvailable = await Sharing.isAvailableAsync();
+      if (isAvailable) {
+        await Sharing.shareAsync(fileUri, {
+          mimeType: "text/csv",
+          dialogTitle: "Export User Data",
+        });
+        Toast.success("Data exported successfully!");
+      } else {
+        Toast.error("Sharing is not available on this device");
+      }
+    } catch (error) {
+      console.error("Export error:", error);
+      Toast.error("Failed to export data. Please try again.");
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  const handleViewData = () => {
+    if (!userData) {
+      Toast.error("No user data available");
+      return;
+    }
+
     Alert.alert(
-      "Export Data",
-      "Your data will be exported and sent to your email address. This may take a few minutes.",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Export",
-          onPress: () => Alert.alert("Success", "Data export initiated!"),
-        },
-      ]
+      "Your Data Summary",
+      `Name: ${userData.firstName || "Not set"} ${userData.lastName || ""}\n` +
+        `Email: ${userData.email || "Not set"}\n` +
+        `Height: ${userData.height || "Not set"} cm\n` +
+        `Weight: ${userData.weight || "Not set"} kg\n` +
+        `Calorie Goal: ${userData.calorieGoal || "Not set"} calories\n` +
+        `Protein Goal: ${userData.proteinGoal || "Not set"}g\n` +
+        `Profile Completed: ${userData.profileCompleted ? "Yes" : "No"}`,
+      [{ text: "OK" }]
     );
   };
 
@@ -41,216 +144,159 @@ export default function DataPrivacyScreen() {
         {
           text: "Delete",
           style: "destructive",
-          onPress: () =>
-            Alert.alert("Account Deleted", "Your account has been deleted."),
+          onPress: () => {
+            Toast.error("Account deletion not implemented yet");
+          },
         },
       ]
     );
   };
 
+  const renderToggleSwitch = (isEnabled: boolean) => (
+    <View
+      className={`w-12 h-6 rounded-full ${
+        isEnabled ? "bg-neutral-800" : "bg-neutral-200"
+      }`}
+    >
+      <View
+        className={`w-5 h-5 rounded-full bg-white mt-0.5 ml-0.5 ${
+          isEnabled ? "ml-6" : "ml-0.5"
+        }`}
+      />
+    </View>
+  );
+
   return (
-    <View className="flex-1 bg-gray-50">
+    <SafeAreaView className="flex-1 bg-white">
       {/* Header */}
-      <View className="bg-white pt-12 pb-4 px-4 border-b border-gray-200">
+      <View className="bg-white mt-4 pb-4 px-4 ">
         <View className="flex-row items-center justify-between">
           <TouchableOpacity
             onPress={() => router.back()}
             className="flex-row items-center"
           >
             <ArrowLeft size={24} color="#374151" />
-            <Text className="text-lg font-semibold text-gray-900 ml-2">
+            <AppText
+              tweight="medium"
+              className="flex-1 text-center text-lg text-neutral-600 ml-2"
+            >
               Data & Privacy
-            </Text>
+            </AppText>
           </TouchableOpacity>
         </View>
       </View>
 
       <ScrollView className="flex-1 px-4 pt-6">
         {/* Privacy Settings */}
-        <View className="bg-white rounded-lg p-6 mb-6">
-          <Text className="text-lg font-semibold text-gray-900 mb-4">
+
+        <View
+          className="bg-white rounded-3xl border border-neutral-200 py-8 mb-8"
+          style={styles.shadow}
+        >
+          <AppText className="text-xl font-semibold text-neutral-700 w-full mb-4 px-6 py-4">
             Privacy Settings
-          </Text>
+          </AppText>
 
-          <View className="space-y-4">
-            <View className="flex-row items-center justify-between">
+          <View
+            className="border-t border-neutral-200 "
+            style={{
+              overflow: "hidden",
+            }}
+          >
+            <TouchableOpacity
+              onPress={() => toggleSetting("shareData")}
+              className="flex-row items-center justify-between py-4 px-6"
+            >
               <View className="flex-1">
-                <Text className="text-base font-medium text-gray-900">
+                <AppText className="text-base font-medium text-gray-900">
                   Share Data for Research
-                </Text>
-                <Text className="text-sm text-gray-500">
+                </AppText>
+                <AppText className="text-sm text-gray-500">
                   Help improve nutrition science (anonymous)
-                </Text>
+                </AppText>
               </View>
-              <TouchableOpacity
-                onPress={() => toggleSetting("shareData")}
-                className={`w-12 h-6 rounded-full ${
-                  privacySettings.shareData ? "bg-blue-500" : "bg-gray-300"
-                }`}
-              >
-                <View
-                  className={`w-5 h-5 rounded-full bg-white mt-0.5 ml-0.5 ${
-                    privacySettings.shareData ? "ml-6" : "ml-0.5"
-                  }`}
-                />
-              </TouchableOpacity>
-            </View>
+              {renderToggleSwitch(privacySettings.shareData)}
+            </TouchableOpacity>
+            <DashedSeparator className="my-4 w-full" width={500} />
 
-            <View className="flex-row items-center justify-between">
+            <TouchableOpacity
+              onPress={() => toggleSetting("analytics")}
+              className="flex-row items-center justify-between py-4 px-6"
+            >
               <View className="flex-1">
-                <Text className="text-base font-medium text-gray-900">
+                <AppText className="text-base font-medium text-gray-900">
                   Analytics
-                </Text>
-                <Text className="text-sm text-gray-500">
+                </AppText>
+                <AppText className="text-sm text-gray-500">
                   Help us improve the app
-                </Text>
+                </AppText>
               </View>
-              <TouchableOpacity
-                onPress={() => toggleSetting("analytics")}
-                className={`w-12 h-6 rounded-full ${
-                  privacySettings.analytics ? "bg-blue-500" : "bg-gray-300"
-                }`}
-              >
-                <View
-                  className={`w-5 h-5 rounded-full bg-white mt-0.5 ml-0.5 ${
-                    privacySettings.analytics ? "ml-6" : "ml-0.5"
-                  }`}
-                />
-              </TouchableOpacity>
-            </View>
+              {renderToggleSwitch(privacySettings.analytics)}
+            </TouchableOpacity>
+            <DashedSeparator className="my-4 w-full" width={500} />
 
-            <View className="flex-row items-center justify-between">
+            <TouchableOpacity
+              onPress={() => toggleSetting("personalizedAds")}
+              className="flex-row items-center justify-between py-4 px-6"
+            >
               <View className="flex-1">
-                <Text className="text-base font-medium text-gray-900">
+                <AppText className="text-base font-medium text-gray-900">
                   Personalized Ads
-                </Text>
-                <Text className="text-sm text-gray-500">
+                </AppText>
+                <AppText className="text-sm text-gray-500">
                   Show relevant advertisements
-                </Text>
+                </AppText>
               </View>
-              <TouchableOpacity
-                onPress={() => toggleSetting("personalizedAds")}
-                className={`w-12 h-6 rounded-full ${
-                  privacySettings.personalizedAds
-                    ? "bg-blue-500"
-                    : "bg-gray-300"
-                }`}
-              >
-                <View
-                  className={`w-5 h-5 rounded-full bg-white mt-0.5 ml-0.5 ${
-                    privacySettings.personalizedAds ? "ml-6" : "ml-0.5"
-                  }`}
-                />
-              </TouchableOpacity>
-            </View>
+              {renderToggleSwitch(privacySettings.personalizedAds)}
+            </TouchableOpacity>
           </View>
         </View>
 
         {/* Data Management */}
-        <View className="bg-white rounded-lg p-6 mb-6">
-          <Text className="text-lg font-semibold text-gray-900 mb-4">
-            Data Management
-          </Text>
+        <SettingsContainer title="Data Management">
+          <View className="bg-white rounded-3xl  " style={styles.shadow}>
+            <SettingsCard
+              title="Export My Data"
+              subtitle={
+                isExporting ? "Exporting..." : "Download all your data as CSV"
+              }
+              icon={<Download size={20} color="#6b7280" />}
+              onPress={handleExportData}
+              showBorder={true}
+            />
 
-          <TouchableOpacity
-            onPress={handleExportData}
-            className="flex-row items-center justify-between py-3 border-b border-gray-100"
-          >
-            <View className="flex-row items-center">
-              <Download size={20} color="#6b7280" />
-              <View className="ml-3">
-                <Text className="text-base font-medium text-gray-900">
-                  Export My Data
-                </Text>
-                <Text className="text-sm text-gray-500">
-                  Download all your data
-                </Text>
-              </View>
-            </View>
-          </TouchableOpacity>
+            <SettingsCard
+              title="View My Data"
+              subtitle="See what data we have"
+              icon={<Eye size={20} color="#6b7280" />}
+              onPress={handleViewData}
+              showBorder={true}
+            />
 
-          <TouchableOpacity className="flex-row items-center justify-between py-3 border-b border-gray-100">
-            <View className="flex-row items-center">
-              <Eye size={20} color="#6b7280" />
-              <View className="ml-3">
-                <Text className="text-base font-medium text-gray-900">
-                  View My Data
-                </Text>
-                <Text className="text-sm text-gray-500">
-                  See what data we have
-                </Text>
-              </View>
-            </View>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            onPress={handleDeleteAccount}
-            className="flex-row items-center justify-between py-3"
-          >
-            <View className="flex-row items-center">
-              <Trash2 size={20} color="#dc2626" />
-              <View className="ml-3">
-                <Text className="text-base font-medium text-red-600">
-                  Delete Account
-                </Text>
-                <Text className="text-sm text-gray-500">
-                  Permanently delete all data
-                </Text>
-              </View>
-            </View>
-          </TouchableOpacity>
-        </View>
-
-        {/* Privacy Policy */}
-        <View className="bg-white rounded-lg p-6 mb-6">
-          <Text className="text-lg font-semibold text-gray-900 mb-4">
-            Legal
-          </Text>
-
-          <TouchableOpacity className="flex-row items-center justify-between py-3 border-b border-gray-100">
-            <View>
-              <Text className="text-base font-medium text-gray-900">
-                Privacy Policy
-              </Text>
-              <Text className="text-sm text-gray-500">
-                Read our privacy policy
-              </Text>
-            </View>
-          </TouchableOpacity>
-
-          <TouchableOpacity className="flex-row items-center justify-between py-3">
-            <View>
-              <Text className="text-base font-medium text-gray-900">
-                Terms of Service
-              </Text>
-              <Text className="text-sm text-gray-500">
-                Read our terms of service
-              </Text>
-            </View>
-          </TouchableOpacity>
-        </View>
-
-        {/* Data Security */}
-        <View className="bg-white rounded-lg p-6 mb-6">
-          <Text className="text-lg font-semibold text-gray-900 mb-4">
-            Data Security
-          </Text>
-
-          <View className="bg-green-50 p-4 rounded-lg">
-            <View className="flex-row items-center mb-2">
-              <Shield size={20} color="#059669" />
-              <Text className="text-green-800 font-medium ml-2">
-                Your data is secure
-              </Text>
-            </View>
-            <Text className="text-sm text-green-700">
-              We use industry-standard encryption to protect your personal
-              information. Your data is never shared with third parties without
-              your explicit consent.
-            </Text>
+            <SettingsCard
+              title="Delete Account"
+              subtitle="Permanently delete all data"
+              icon={<Trash2 size={20} color="#dc2626" />}
+              onPress={handleDeleteAccount}
+              showBorder={false}
+            />
           </View>
-        </View>
+        </SettingsContainer>
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 }
+
+// make a style for shadow class
+const styles = StyleSheet.create({
+  shadow: {
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 10,
+    },
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    elevation: 8,
+  },
+});
