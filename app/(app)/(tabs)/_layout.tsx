@@ -1,17 +1,19 @@
 // import { Ionicons } from "@expo/vector-icons";
 
 import { AppText } from "@/app/components/AppText";
+import CameraScanIcon from "@/assets/icons/camera.svg";
 import { LinearGradient } from "expo-linear-gradient";
 import { Tabs } from "expo-router";
 import { Home, User } from "lucide-react-native";
 import React from "react";
-import { Image, TouchableOpacity } from "react-native";
+import { StyleSheet, TouchableOpacity } from "react-native";
+
 export default function TabsLayout() {
   return (
     <Tabs
       screenOptions={({ route }) => ({
         headerShown: false,
-        
+
         tabBarStyle: {
           position: "relative",
           height: 90,
@@ -98,12 +100,7 @@ export default function TabsLayout() {
                 }}
                 className=""
               />
-              <Image
-                source={require("@/assets/icons/scan-camera.png")}
-                className="w-8 h-8 mr-1 "
-                resizeMode="contain"
-                style={{ zIndex: 1 }}
-              />
+              <CameraScanIcon width={24} height={24} className="mr-2" />
               <AppText
                 className="text-[#CDCDCD] capitalize"
                 style={{ zIndex: 1 }}
@@ -126,3 +123,17 @@ export default function TabsLayout() {
     </Tabs>
   );
 }
+
+// make a style for shadow class
+const styles = StyleSheet.create({
+  shadow: {
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 10,
+    },
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    elevation: 8,
+  },
+});

@@ -4,14 +4,12 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { useQuery } from "convex/react";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Image,
   ScrollView,
   StatusBar,
-  StyleSheet,
-  Text,
   View,
 } from "react-native";
 
@@ -20,6 +18,7 @@ import CarbsIcon from "@/assets/icons/carbs.svg";
 import FatIcon from "@/assets/icons/fat-icon.svg";
 import ProteinIcon from "@/assets/icons/protein.svg";
 import { LinearGradient } from "expo-linear-gradient";
+import LottieView from "lottie-react-native";
 import { AppText } from "../components/AppText";
 import { LightButton } from "../components/ui/Button";
 
@@ -37,6 +36,7 @@ export default function FoodDetailScreen() {
   );
   const router = useRouter();
   const navigation = useNavigation();
+  const [imageLoading, setImageLoading] = useState(true);
 
   // Use useFocusEffect to ensure StatusBar updates when screen comes into focus
   useFocusEffect(
@@ -63,15 +63,15 @@ export default function FoodDetailScreen() {
 
   if (!id) {
     return (
-      <View style={styles.centered}>
-        <Text>No food ID provided.</Text>
+      <View className="flex-1 justify-center items-center">
+        <AppText>No food ID provided.</AppText>
       </View>
     );
   }
 
   if (food === undefined) {
     return (
-      <View style={styles.centered}>
+      <View className="flex-1 justify-center items-center">
         <ActivityIndicator size="large" />
       </View>
     );
@@ -79,8 +79,8 @@ export default function FoodDetailScreen() {
 
   if (!food) {
     return (
-      <View style={styles.centered}>
-        <Text>Food not found.</Text>
+      <View className="flex-1 justify-center items-center">
+        <AppText>Food not found.</AppText>
       </View>
     );
   }
@@ -91,7 +91,7 @@ export default function FoodDetailScreen() {
       <StatusBar barStyle="dark-content" translucent={true} animated={true} />
       {/* <SafeAreaView className="flex-1 bg-white"> */}
       <ScrollView
-        contentContainerStyle={styles.container}
+        contentContainerStyle={{ padding: 24, alignItems: "center" }}
         className="flex-1 bg-white"
         showsVerticalScrollIndicator={false}
       >
@@ -104,12 +104,39 @@ export default function FoodDetailScreen() {
         </View>
 
         {/* main image */}
-        {food.imageUrl && (
-          <Image
-            className="w-[100vw] h-[55vh] -mt-[55px] object-cover"
-            source={{ uri: food.imageUrl }}
-            resizeMode="cover"
-          />
+        {food.imageUrl ? (
+          <View className="w-[100vw] h-[55vh] -mt-[55px] relative">
+            {imageLoading && (
+              <View className="absolute inset-0 bg-neutral-100 justify-center items-center z-10">
+                <LottieView
+                  source={require("@/assets/lottie/image-loading.json")}
+                  autoPlay
+                  loop
+                  style={{ width: 500, height: 500 }}
+                />
+              </View>
+            )}
+            <Image
+              className="w-full h-full object-cover"
+              source={{ uri: food.imageUrl }}
+              resizeMode="cover"
+              onLoadEnd={() => {
+                // add a delay of 1 second
+                setTimeout(() => {
+                  setImageLoading(false);
+                }, 1000);
+              }}
+            />
+          </View>
+        ) : (
+          <View className="w-[100vw] h-[55vh] -mt-[55px] object-cover bg-neutral-400">
+            <LottieView
+              source={require("@/assets/lottie/image-loading.json")}
+              autoPlay
+              loop
+              style={{ width: 100, height: 100, alignSelf: "center" }}
+            />
+          </View>
         )}
 
         <View className="w-full h-full bg-white">
@@ -180,7 +207,7 @@ export default function FoodDetailScreen() {
           {/* Items */}
           <View className="flex-row items-center mt-2  gap-2">
             {food.items && food.items.length > 0 && (
-              <View style={styles.section}>
+              <View>
                 <AppText
                   tweight="medium"
                   className="text-xl mt-4 capitalize text-neutral-700"
@@ -226,33 +253,3 @@ export default function FoodDetailScreen() {
     </>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { padding: 24, alignItems: "center" },
-  centered: { flex: 1, justifyContent: "center", alignItems: "center" },
-  backButton: {
-    alignSelf: "flex-start",
-    marginBottom: 16,
-    backgroundColor: "#007AFF",
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 8,
-  },
-  backButtonText: {
-    color: "white",
-    fontWeight: "bold",
-    fontSize: 16,
-  },
-  title: { fontSize: 28, fontWeight: "bold", marginBottom: 16 },
-  image: { width: 320, height: 200, borderRadius: 12, marginBottom: 12 },
-  compressedImage: {
-    width: 160,
-    height: 100,
-    borderRadius: 8,
-    marginBottom: 12,
-    opacity: 0.7,
-  },
-  section: { marginVertical: 10, width: "100%" },
-  sectionTitle: { fontWeight: "bold", fontSize: 18, marginBottom: 4 },
-  value: { fontSize: 16, marginBottom: 2 },
-});
