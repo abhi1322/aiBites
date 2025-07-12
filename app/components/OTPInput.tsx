@@ -20,7 +20,7 @@ export default function OTPInput({
   disabled = false,
 }: OTPInputProps) {
   const inputRefs = useRef<TextInput[]>([]);
-  const [focusedIndex, setFocusedIndex] = useState<number>(-1);
+  const [focusedIndex, setFocusedIndex] = useState<number>(0);
 
   useEffect(() => {
     if (value.length === length && onComplete) {
@@ -28,24 +28,58 @@ export default function OTPInput({
     }
   }, [value, length, onComplete]);
 
+  // Focus first input when component mounts
+  useEffect(() => {
+    setTimeout(() => {
+      inputRefs.current[0]?.focus();
+      setFocusedIndex(0);
+    }, 500);
+  }, []);
+
   const handleChange = (text: string, index: number) => {
+    // Only allow numeric input
+    const numericText = text.replace(/[^0-9]/g, "");
+
+    // Create new value array
     const newValue = value.split("");
-    newValue[index] = text;
+
+    // Update the current index
+    if (numericText.length > 0) {
+      newValue[index] = numericText[0];
+    } else {
+      newValue[index] = "";
+    }
+
     const result = newValue.join("");
+    console.log(
+      `Input ${index}: "${text}" -> "${numericText[0] || ""}", Result: "${result}"`
+    );
+
+    // Update the value
     onChange(result);
 
-    // Auto-focus next input
-    if (text && index < length - 1) {
-      inputRefs.current[index + 1]?.focus();
-      setFocusedIndex(index + 1);
+    // Move to next input if we have a digit
+    if (numericText.length > 0 && index < length - 1) {
+      setTimeout(() => {
+        inputRefs.current[index + 1]?.focus();
+        setFocusedIndex(index + 1);
+      }, 100);
     }
   };
 
   const handleKeyPress = (e: any, index: number) => {
     // Handle backspace
-    if (e.nativeEvent.key === "Backspace" && !value[index] && index > 0) {
-      inputRefs.current[index - 1]?.focus();
-      setFocusedIndex(index - 1);
+    if (e.nativeEvent.key === "Backspace") {
+      if (!value[index] && index > 0) {
+        // If current field is empty and backspace is pressed, go to previous field
+        inputRefs.current[index - 1]?.focus();
+        setFocusedIndex(index - 1);
+      } else if (value[index]) {
+        // If current field has value, clear it first
+        const newValue = value.split("");
+        newValue[index] = "";
+        onChange(newValue.join(""));
+      }
     }
   };
 
@@ -73,7 +107,7 @@ export default function OTPInput({
               error
                 ? "border-red-500 bg-red-50"
                 : focusedIndex === index
-                  ? "border-neutral-500 bg-neutral-50"
+                  ? "border-blue-500 bg-blue-50"
                   : value[index]
                     ? "border-green-500 bg-green-50"
                     : "border-gray-300 bg-white"
@@ -93,7 +127,9 @@ export default function OTPInput({
               maxLength={1}
               selectTextOnFocus
               editable={!disabled}
-              selectionColor={error ? "#ef4444" : "#000000"}
+              selectionColor={error ? "#ef4444" : "#3b82f6"}
+              autoFocus={index === 0}
+              style={{ minWidth: 20, minHeight: 20 }}
             />
           </TouchableOpacity>
         ))}
@@ -107,6 +143,11 @@ export default function OTPInput({
           Invalid verification code
         </AppText>
       )}
+
+      {/* Debug info */}
+      <AppText className="text-xs text-gray-400 text-center mt-2">
+        Code: {value} (Length: {value.length})
+      </AppText>
     </View>
   );
 }

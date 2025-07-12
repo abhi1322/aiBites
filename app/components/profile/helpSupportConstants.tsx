@@ -1,6 +1,5 @@
-import React from "react";
-import { Alert, Linking } from "react-native";
 import * as MailComposer from "expo-mail-composer";
+import { Alert, Linking } from "react-native";
 
 export const supportEmail = "kumarabhishek282001@gmail.com";
 
@@ -79,10 +78,10 @@ Please help me resolve this issue.
 Thanks!`,
   },
   bugReport: {
-    subject: "Bug Report - AIBite App",
+    subject: "Bug Report - Mensura App",
     body: `Hi Support Team,
 
-I would like to report a bug in the AIBite app.
+I would like to report a bug in the Mensura app.
 
 Bug Details:
 - What happened: [Describe the bug]
@@ -102,10 +101,10 @@ Additional Information:
 Thanks for your help in making the app better!`,
   },
   featureSuggestion: {
-    subject: "Feature Suggestion - AIBite App",
+    subject: "Feature Suggestion - Mensura App",
     body: `Hi Support Team,
 
-I would like to suggest a new feature for the AIBite app.
+I would like to suggest a new feature for the Mensura app.
 
 Feature Suggestion:
 - Feature name: [Name of the feature]
@@ -126,7 +125,11 @@ Thanks for considering my suggestion!`,
   },
 };
 
-export const sendEmail = async (template: EmailTemplate, customSubject?: string, customBody?: string) => {
+export const sendEmail = async (
+  template: EmailTemplate,
+  customSubject?: string,
+  customBody?: string
+) => {
   const subject = customSubject || template.subject;
   const body = customBody || template.body;
 
@@ -152,9 +155,12 @@ export const sendEmail = async (template: EmailTemplate, customSubject?: string,
   }
 };
 
-export const handleCommonIssue = async (issueType: string, issueTitle: string) => {
+export const handleCommonIssue = async (
+  issueType: string,
+  issueTitle: string
+) => {
   const template = emailTemplates[issueType as keyof typeof emailTemplates];
-  
+
   if (template) {
     await sendEmail(template);
   } else {
@@ -183,4 +189,4 @@ export const handleFeatureSuggestion = async () => {
 
 export const handleFAQ = () => {
   Alert.alert("FAQ", "Opening frequently asked questions...");
-}; 
+};

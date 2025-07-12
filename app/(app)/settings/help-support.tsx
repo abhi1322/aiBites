@@ -1,10 +1,10 @@
 import { AppText } from "@/app/components/AppText";
-import { 
-  supportEmail,
+import {
   handleCommonIssue,
-  handleReportBug,
+  handleFAQ,
   handleFeatureSuggestion,
-  handleFAQ
+  handleReportBug,
+  supportEmail,
 } from "@/app/components/profile";
 import * as Clipboard from "expo-clipboard";
 import * as Linking from "expo-linking";
@@ -54,12 +54,12 @@ export default function HelpSupportScreen() {
       if (isAvailable) {
         await MailComposer.composeAsync({
           recipients: [supportEmail],
-          subject: "Support Request - AIBite App",
+          subject: "Support Request - Mensura App",
           body: "Hi Support Team,\n\nI need help with:\n\n[Please describe your issue here]\n\nThanks!",
         });
       } else {
         // Fallback to mailto link
-        const url = `mailto:${supportEmail}?subject=Support Request - AIBite App&body=Hi Support Team,%0A%0AI need help with:%0A%0A[Please describe your issue here]%0A%0AThanks!`;
+        const url = `mailto:${supportEmail}?subject=Support Request - Mensura App&body=Hi Support Team,%0A%0AI need help with:%0A%0A[Please describe your issue here]%0A%0AThanks!`;
         await Linking.openURL(url);
       }
     } catch (error) {

@@ -6,7 +6,13 @@ import { useQuery } from "convex/react";
 import * as FileSystem from "expo-file-system";
 import { useRouter } from "expo-router";
 import * as Sharing from "expo-sharing";
-import { ArrowLeft, Download, Eye, Trash2 } from "lucide-react-native";
+import {
+  ArrowLeft,
+  Download,
+  Eye,
+  FileText,
+  Trash2,
+} from "lucide-react-native";
 import { useState } from "react";
 import {
   Alert,
@@ -18,12 +24,19 @@ import {
 } from "react-native";
 import { Toast } from "toastify-react-native";
 import { api } from "../../../convex/_generated/api";
+import * as DataExportUtils from "../../utils/dataExportUtils";
 
 export default function DataPrivacyScreen() {
   const { user } = useUser();
   const router = useRouter();
   const userData = useQuery(
     api.users.getUserByClerkId,
+    user?.id ? { clerkId: user.id } : "skip"
+  );
+
+  // Get comprehensive user data for export
+  const exportData = useQuery(
+    api.users.getAllUserDataForExport,
     user?.id ? { clerkId: user.id } : "skip"
   );
 
@@ -40,58 +53,30 @@ export default function DataPrivacyScreen() {
       [key]: !prev[key],
     }));
   };
+  const handleViewData = () => {
+    if (!exportData) {
+      Toast.error("No data available");
+      return;
+    }
 
-  const convertToCSV = (data: any) => {
-    if (!data) return "";
-
-    // Create user data object
-    const userDataObj = {
-      "First Name": data.firstName || "",
-      "Last Name": data.lastName || "",
-      Email: data.email || "",
-      "Height (cm)": data.height || "",
-      "Weight (kg)": data.weight || "",
-      Gender: data.gender || "",
-      "Calorie Goal": data.calorieGoal || "",
-      "Protein Goal (g)": data.proteinGoal || "",
-      "Carb Goal (g)": data.carbGoal || "",
-      "Fat Goal (g)": data.fatGoal || "",
-      "Date of Birth": data.dateOfBirth
-        ? new Date(data.dateOfBirth).toLocaleDateString()
-        : "",
-      "Profile Completed": data.profileCompleted ? "Yes" : "No",
-      "Created At": data.createdAt
-        ? new Date(data.createdAt).toLocaleDateString()
-        : "",
-      "Updated At": data.updatedAt
-        ? new Date(data.updatedAt).toLocaleDateString()
-        : "",
-    };
-
-    const headers = Object.keys(userDataObj).join(",");
-    const values = Object.values(userDataObj)
-      .map((value) =>
-        typeof value === "string" && value.includes(",") ? `"${value}"` : value
-      )
-      .join(",");
-
-    return `${headers}\n${values}`;
+    const summaryText = DataExportUtils.generateSummaryText(exportData);
+    Alert.alert("Your Data Summary", summaryText, [{ text: "OK" }]);
   };
 
   const handleExportData = async () => {
-    if (!userData) {
-      Toast.error("No user data available to export");
+    if (!exportData) {
+      Toast.error("No data available to export");
       return;
     }
 
     setIsExporting(true);
     try {
-      // Convert user data to CSV
-      const csvContent = convertToCSV(userData);
+      // Generate main CSV (focused on food logs)
+      const csvContent = DataExportUtils.generateMainCSV(exportData);
 
       // Create filename with timestamp
       const timestamp = new Date().toISOString().split("T")[0];
-      const filename = `user_data_${timestamp}.csv`;
+      const filename = `Mensura_food_logs_${timestamp}.csv`;
       const fileUri = FileSystem.documentDirectory + filename;
 
       // Write CSV file
@@ -102,9 +87,9 @@ export default function DataPrivacyScreen() {
       if (isAvailable) {
         await Sharing.shareAsync(fileUri, {
           mimeType: "text/csv",
-          dialogTitle: "Export User Data",
+          dialogTitle: "Export Mensura Food Logs",
         });
-        Toast.success("Data exported successfully!");
+        Toast.success("Food logs exported successfully!");
       } else {
         Toast.error("Sharing is not available on this device");
       }
@@ -116,23 +101,42 @@ export default function DataPrivacyScreen() {
     }
   };
 
-  const handleViewData = () => {
-    if (!userData) {
-      Toast.error("No user data available");
+  const handleExportJSON = async () => {
+    if (!exportData) {
+      Toast.error("No data available to export");
       return;
     }
 
-    Alert.alert(
-      "Your Data Summary",
-      `Name: ${userData.firstName || "Not set"} ${userData.lastName || ""}\n` +
-        `Email: ${userData.email || "Not set"}\n` +
-        `Height: ${userData.height || "Not set"} cm\n` +
-        `Weight: ${userData.weight || "Not set"} kg\n` +
-        `Calorie Goal: ${userData.calorieGoal || "Not set"} calories\n` +
-        `Protein Goal: ${userData.proteinGoal || "Not set"}g\n` +
-        `Profile Completed: ${userData.profileCompleted ? "Yes" : "No"}`,
-      [{ text: "OK" }]
-    );
+    setIsExporting(true);
+    try {
+      // Generate JSON export
+      const jsonContent = DataExportUtils.generateJSONExport(exportData);
+
+      // Create filename with timestamp
+      const timestamp = new Date().toISOString().split("T")[0];
+      const filename = `Mensura_data_export_${timestamp}.json`;
+      const fileUri = FileSystem.documentDirectory + filename;
+
+      // Write JSON file
+      await FileSystem.writeAsStringAsync(fileUri, jsonContent);
+
+      // Check if sharing is available
+      const isAvailable = await Sharing.isAvailableAsync();
+      if (isAvailable) {
+        await Sharing.shareAsync(fileUri, {
+          mimeType: "application/json",
+          dialogTitle: "Export Mensura Data (JSON)",
+        });
+        Toast.success("JSON data exported successfully!");
+      } else {
+        Toast.error("Sharing is not available on this device");
+      }
+    } catch (error) {
+      console.error("Export error:", error);
+      Toast.error("Failed to export JSON data. Please try again.");
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   const handleDeleteAccount = () => {
@@ -166,6 +170,44 @@ export default function DataPrivacyScreen() {
     </View>
   );
 
+  const handleExportComprehensive = async () => {
+    if (!exportData) {
+      Toast.error("No data available to export");
+      return;
+    }
+
+    setIsExporting(true);
+    try {
+      // Generate comprehensive CSV (all data)
+      const csvContent = DataExportUtils.generateComprehensiveCSV(exportData);
+
+      // Create filename with timestamp
+      const timestamp = new Date().toISOString().split("T")[0];
+      const filename = `Mensura_complete_data_${timestamp}.csv`;
+      const fileUri = FileSystem.documentDirectory + filename;
+
+      // Write CSV file
+      await FileSystem.writeAsStringAsync(fileUri, csvContent);
+
+      // Check if sharing is available
+      const isAvailable = await Sharing.isAvailableAsync();
+      if (isAvailable) {
+        await Sharing.shareAsync(fileUri, {
+          mimeType: "text/csv",
+          dialogTitle: "Export Complete Mensura Data",
+        });
+        Toast.success("Complete data exported successfully!");
+      } else {
+        Toast.error("Sharing is not available on this device");
+      }
+    } catch (error) {
+      console.error("Export error:", error);
+      Toast.error("Failed to export data. Please try again.");
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   return (
     <SafeAreaView className="flex-1 bg-white">
       {/* Header */}
@@ -188,7 +230,6 @@ export default function DataPrivacyScreen() {
 
       <ScrollView className="flex-1 px-4 pt-6">
         {/* Privacy Settings */}
-
         <View
           className="bg-white rounded-3xl border border-neutral-200 py-8 mb-8"
           style={styles.shadow}
@@ -254,14 +295,34 @@ export default function DataPrivacyScreen() {
 
         {/* Data Management */}
         <SettingsContainer title="Data Management">
-          <View className="bg-white rounded-3xl  " style={styles.shadow}>
+          <View className="bg-white rounded-3xl" style={styles.shadow}>
             <SettingsCard
-              title="Export My Data"
+              title="Export Food Logs (CSV)"
+              subtitle={
+                isExporting ? "Exporting..." : "Download food logs as CSV"
+              }
+              icon={<Download size={20} color="#6b7280" />}
+              onPress={handleExportData}
+              showBorder={true}
+            />
+
+            <SettingsCard
+              title="Export My Data (JSON)"
+              subtitle={
+                isExporting ? "Exporting..." : "Download all your data as JSON"
+              }
+              icon={<FileText size={20} color="#6b7280" />}
+              onPress={handleExportJSON}
+              showBorder={true}
+            />
+
+            <SettingsCard
+              title="Export Complete Data (CSV)"
               subtitle={
                 isExporting ? "Exporting..." : "Download all your data as CSV"
               }
               icon={<Download size={20} color="#6b7280" />}
-              onPress={handleExportData}
+              onPress={handleExportComprehensive}
               showBorder={true}
             />
 

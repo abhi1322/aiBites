@@ -1,16 +1,14 @@
 {
   "expo": {
-    "name": "aibite",
-    "slug": "aibite",
+    "name": "Mensura",
+    "slug": "Mensura",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "aibite",
+    "scheme": "Mensura",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
-    "assetBundlePatterns": [
-      "**/*"
-    ],
+    "assetBundlePatterns": ["**/*"],
     "fonts": {
       "Poppins-Black": "./assets/fonts/Poppins-Black.ttf",
       "Poppins-Bold": "./assets/fonts/Poppins-Bold.ttf",
@@ -26,9 +24,7 @@
     "ios": {
       "supportsTablet": true,
       "infoPlist": {
-        "UIBackgroundModes": [
-          "remote-notification"
-        ]
+        "UIBackgroundModes": ["remote-notification"]
       }
     },
     "android": {
@@ -73,9 +69,7 @@
         {
           "icon": "./assets/images/notification-icon.png",
           "color": "#ffffff",
-          "sounds": [
-            "./assets/sounds/notification.wav"
-          ]
+          "sounds": ["./assets/sounds/notification.wav"]
         }
       ],
       "expo-font",

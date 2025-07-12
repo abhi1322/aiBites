@@ -99,3 +99,51 @@ export const updateUserGoals = mutation({
     });
   },
 });
+
+// Get all user data for export (profile, food items, daily logs)
+export const getAllUserDataForExport = query({
+  args: { clerkId: v.string() },
+  handler: async (ctx, args) => {
+    // Get user profile
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_clerk_id", (q) => q.eq("clerkId", args.clerkId))
+      .first();
+
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    // Get all food items created by user
+    const foodItems = await ctx.db
+      .query("foodItems")
+      .withIndex("by_created_by", (q) => q.eq("createdBy", args.clerkId))
+      .collect();
+
+    // Get all daily logs for user
+    const dailyLogs = await ctx.db
+      .query("dailyLogs")
+      .withIndex("by_user_date", (q) => q.eq("userId", args.clerkId))
+      .collect();
+
+    // Get food item details for each daily log
+    const dailyLogsWithFood = await Promise.all(
+      dailyLogs.map(async (log) => {
+        const foodItem = await ctx.db.get(log.foodItemId);
+        return {
+          ...log,
+          foodItem,
+        };
+      })
+    );
+
+    return {
+      user,
+      foodItems,
+      dailyLogs: dailyLogsWithFood,
+      exportDate: new Date().toISOString(),
+      totalFoodItems: foodItems.length,
+      totalDailyLogs: dailyLogs.length,
+    };
+  },
+});

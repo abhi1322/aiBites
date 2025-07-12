@@ -1,5 +1,5 @@
 {
-  "name": "aibite",
+  "name": "Mensura",
   "main": "expo-router/entry",
   "version": "1.0.0",
   "scripts": {
@@ -26,6 +26,7 @@
     "axios": "^1.10.0",
     "convex": "^1.25.0",
     "convex-helpers": "^0.1.95",
+    "date-fns": "^4.1.0",
     "expo": "~53.0.13",
     "expo-auth-session": "^6.2.1",
     "expo-blur": "~14.1.5",

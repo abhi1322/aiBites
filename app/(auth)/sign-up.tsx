@@ -78,13 +78,17 @@ export default function SignUpScreen() {
       let errorMessage = "Failed to create account. Please try again.";
       if (typeof err === "object" && err !== null) {
         // Check for Clerk error format
-        if (Array.isArray((err as any).errors) && (err as any).errors[0]?.message) {
+        if (
+          Array.isArray((err as any).errors) &&
+          (err as any).errors[0]?.message
+        ) {
           errorMessage = (err as any).errors[0].message;
         } else if (typeof (err as any).message === "string") {
           errorMessage = (err as any).message;
         }
       }
       Alert.alert("Error", errorMessage);
+    } finally {
       setLoading(false);
     }
   };
@@ -111,6 +115,7 @@ export default function SignUpScreen() {
         setOtpError(true);
       }
     } catch (err) {
+      console.error("Verification error:", err);
       setOtpError(true);
     } finally {
       setLoading(false);
@@ -205,7 +210,10 @@ export default function SignUpScreen() {
                 <OTPInput
                   length={6}
                   value={code}
-                  onChange={setCode}
+                  onChange={(newCode) => {
+                    console.log("Code changed from:", code, "to:", newCode);
+                    setCode(newCode);
+                  }}
                   error={otpError}
                   disabled={loading}
                 />

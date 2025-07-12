@@ -16,7 +16,7 @@ interface LoadingScreenProps {
 // add delay
 
 export default function LoadingScreen({
-  title = "AIBite",
+  title = "Mensura",
   subtitle = "Your AI-Powered Nutrition Assistant",
   showSpinner = true,
   delay = 1500, // Default 1.5 seconds
