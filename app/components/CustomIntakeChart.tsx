@@ -16,7 +16,7 @@ const BarChart = ({ data, max }: { data: number[]; max: number }) => {
     setSelected(index);
     setShowTooltip(true);
 
-    // Auto-hide tooltip after 3 seconds
+    // Auto-hide tooltip after 4 seconds (consistent timing)
     setTimeout(() => {
       setShowTooltip(false);
     }, 4000);
@@ -56,16 +56,11 @@ const BarChart = ({ data, max }: { data: number[]; max: number }) => {
                 y={0}
                 width={40}
                 height={height}
-                fill={selected === index ? "#3B82F6" : "#E5E7EB"}
+                fill={selected === index ? "#333333" : "#EBEBEB"}
                 rx={5}
                 ry={5}
               />
             </Svg>
-
-            {/* Date labels below bars */}
-            <Text className="text-xs text-gray-500 mt-2 text-center">
-              {dayString}
-            </Text>
           </TouchableOpacity>
         );
       })}
@@ -93,16 +88,35 @@ const BarChart = ({ data, max }: { data: number[]; max: number }) => {
         const gap = 4; // gap-1 = 4px
         const totalBarWidth = barWidth + gap;
         const leftPosition = index * totalBarWidth + barWidth / 2;
-        const tooltipLeft = index <= 1 ? leftPosition + 85 : leftPosition - 85;
+
+        // Fix positioning for bars 2 and 3
+        let tooltipLeft;
+        if (index <= 1) {
+          // Bars 0, 1: show on right
+          tooltipLeft = leftPosition + 40;
+        } else if (index === 2 || index === 3) {
+          // Bars 2, 3: show on left with proper offset
+          tooltipLeft = leftPosition - 85;
+        } else {
+          // Bars 4+: show on left
+          tooltipLeft = leftPosition - 85;
+        }
+
+
+        // get height of the bar
+        const barHeight = reversedData[index];
+        const barHeightPercentage = (barHeight / max) * 100;
+        const barHeightPixels = (barHeightPercentage / 100) * 100;
 
         return (
           <View
             key={`tooltip-${index}`}
-            className="absolute bottom-1/3 flex-row items-center"
+            className="absolute  flex-row items-center"
             style={{
-                left: index > 2 ? tooltipLeft : 60,
-                flexDirection: index < 2 ? "row-reverse" : "row",
+              left: tooltipLeft,
+              flexDirection: index <= 1 ? "row-reverse" : "row",
               zIndex: 9999,
+              bottom: barHeightPixels + 10,
             }}
           >
             {/* Tooltip Content */}
@@ -116,9 +130,7 @@ const BarChart = ({ data, max }: { data: number[]; max: number }) => {
             </View>
             {/* Tooltip Arrow */}
             <View
-              className={`w-0 h-0 border-l-[6px] border-r-[6px] border-t-[6px] border-l-transparent border-r-transparent border-t-neutral-800 -mt-2 ${
-                index <= 0 ? "order-first" : ""
-              }`}
+              className={`w-0 h-0 border-l-[6px] border-r-[6px] border-t-[6px] border-l-transparent border-r-transparent border-t-neutral-800 -mt-2`}
               style={{
                 transform: [
                   { rotate: index <= 1 ? "90deg" : "-90deg" },
@@ -129,17 +141,6 @@ const BarChart = ({ data, max }: { data: number[]; max: number }) => {
           </View>
         );
       })}
-    </View>
-  );
-};
-
-const Bar = ({ value, max }: { value: number; max: number }) => {
-  // lets use svg to make a bar
-  return (
-    <View>
-      <Svg width={100} height={100}>
-        <Rect x={0} y={0} width={10} height={value} fill="red" />
-      </Svg>
     </View>
   );
 };
