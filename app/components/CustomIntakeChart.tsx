@@ -60,7 +60,12 @@ const BarChart = ({ data, max }: { data: number[]; max: number }) => {
             activeOpacity={0.8}
           >
             {height === 0 && (
-              <View className="w-full h-1/4  rounded-lg border border-neutral-200 border-dashed" />
+              <View
+                className={`w-full   rounded-lg border border-neutral-200 border-dashed`}
+                style={{
+                  height: `${Math.random() * 100}%`,
+                }}
+              />
             )}
             <Svg height={height} width={40} style={{ zIndex: 1 }}>
               <Rect
