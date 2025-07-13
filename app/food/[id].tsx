@@ -1,7 +1,7 @@
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import Ionicons from "@expo/vector-icons/Ionicons";
-import { useFocusEffect, useNavigation } from "@react-navigation/native";
+import { useFocusEffect } from "@react-navigation/native";
 import { useQuery } from "convex/react";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
@@ -35,7 +35,6 @@ export default function FoodDetailScreen() {
     id ? { id: id as Id<"foodItems"> } : "skip"
   );
   const router = useRouter();
-  const navigation = useNavigation();
   const [imageLoading, setImageLoading] = useState(true);
 
   // Use useFocusEffect to ensure StatusBar updates when screen comes into focus
@@ -52,14 +51,7 @@ export default function FoodDetailScreen() {
     }, [])
   );
 
-  useEffect(() => {
-    navigation.setOptions({
-      gestureEnabled: false,
-      headerBackVisible: false,
-      // Ensure header doesn't interfere with StatusBar
-      headerShown: false,
-    });
-  }, [navigation]);
+  // Note: Navigation options are handled by the unstable_settings export above
 
   if (!id) {
     return (

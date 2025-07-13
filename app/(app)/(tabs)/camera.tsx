@@ -1,7 +1,7 @@
 import { AppText } from "@/app/components/AppText";
 import { LightButton } from "@/app/components/ui/Button";
 import Ionicons from "@expo/vector-icons/Ionicons";
-import { useNavigation } from "@react-navigation/native";
+
 import { CameraView, useCameraPermissions } from "expo-camera";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
@@ -20,7 +20,6 @@ import {
 import Scan from "@/assets/icons/scan.svg";
 
 export default function CameraScreen() {
-  const navigation = useNavigation();
   const router = useRouter();
   const [permission, requestPermission] = useCameraPermissions();
   const cameraRef = useRef<CameraView>(null);
@@ -126,7 +125,7 @@ export default function CameraScreen() {
 
       <View className=" h-16 w-20 absolute top-14 left-8">
         <LightButton
-          onPress={() => navigation.navigate("home" as never)}
+          onPress={() => router.push("/(app)/(tabs)/home")}
           icon={<Ionicons name="arrow-back" size={20} color={"#C0C0C0"} />}
         />
       </View>

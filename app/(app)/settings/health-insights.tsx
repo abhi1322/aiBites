@@ -1,3 +1,4 @@
+import { AppText } from "@/app/components/AppText";
 import { useUser } from "@clerk/clerk-expo";
 import { useQuery } from "convex/react";
 import { useRouter } from "expo-router";
@@ -5,23 +6,201 @@ import {
   ArrowLeft,
   BarChart3,
   Calendar,
+  ChevronDown,
   Target,
   TrendingUp,
 } from "lucide-react-native";
-import { ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { useCallback, useRef, useState } from "react";
+import {
+  Animated,
+  Modal,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { api } from "../../../convex/_generated/api";
 import CustomIntakeChart from "../../components/CustomIntakeChart";
 
 // dummy data
-const data = [1800, 1900, 2000, 2100, 2000, 2080, 1850];
+const weeklyData = [1800, 1900, 2000, 2100, 2000, 2080, 1850];
+const monthlyData = [
+  1850, 1920, 1980, 2050, 2100, 1950, 2000, 1850, 1900, 2050, 1950, 2000, 2100,
+  1950, 2000, 1850, 1900, 2050, 1950, 2000, 2100, 1950, 2000, 1850, 1900, 2050,
+  1950, 2000, 2100, 1950,
+];
+
+type DurationType = "week" | "month";
+
+// Keyboard Spinner Picker Component
+const SpinnerPicker = ({
+  value,
+  onValueChange,
+}: {
+  value: DurationType;
+  onValueChange: (value: DurationType) => void;
+}) => {
+  const [isVisible, setIsVisible] = useState(false);
+  const slideAnim = useRef(new Animated.Value(300)).current;
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+
+  const options = [
+    { label: "Week", value: "week" },
+    { label: "Month", value: "month" },
+  ];
+
+  const selectedOption = options.find((option) => option.value === value);
+
+  const showPicker = () => {
+    setIsVisible(true);
+    Animated.parallel([
+      Animated.timing(slideAnim, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  };
+
+  const hidePicker = () => {
+    Animated.parallel([
+      Animated.timing(slideAnim, {
+        toValue: 300,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+      Animated.timing(fadeAnim, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+    ]).start(() => {
+      setIsVisible(false);
+    });
+  };
+
+  const handleSelect = (option: DurationType) => {
+    onValueChange(option);
+    hidePicker();
+  };
+
+  return (
+    <>
+      <TouchableOpacity
+        onPress={showPicker}
+        className="bg-gray-100 border border-gray-200 rounded-lg px-4 py-2 flex-row items-center justify-between"
+        style={{ minHeight: 40, width: 120 }}
+      >
+        <Text className="text-gray-900 font-medium text-sm">
+          {selectedOption?.label || "Select"}
+        </Text>
+        <ChevronDown size={16} color="#6b7280" />
+      </TouchableOpacity>
+
+      <Modal
+        visible={isVisible}
+        transparent={true}
+        animationType="none"
+        onRequestClose={hidePicker}
+        className=""
+      >
+        <Animated.View
+          className="flex-1 bg-black/20"
+          style={{ opacity: fadeAnim }}
+        >
+          <TouchableOpacity
+            className="flex-1"
+            activeOpacity={1}
+            onPress={hidePicker}
+          />
+
+          <Animated.View
+            className="bg-white rounded-t-3xl"
+            style={{
+              transform: [{ translateY: slideAnim }],
+              paddingBottom: 34, // Safe area for home indicator
+            }}
+          >
+            {/* Handle Bar */}
+            <View className="items-center py-3">
+              <View className="w-12 h-1 bg-gray-300 rounded-full" />
+            </View>
+
+            {/* Header */}
+            <View className="flex-row items-center justify-between px-6 py-4 border-b border-gray-100">
+              <TouchableOpacity onPress={hidePicker}>
+                <Text className="text-blue-500 font-medium">Cancel</Text>
+              </TouchableOpacity>
+              <Text className="text-lg font-semibold text-gray-900">
+                Select Duration
+              </Text>
+              <TouchableOpacity onPress={hidePicker}>
+                <Text className="text-blue-500 font-medium">Done</Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* Picker Options */}
+            <View className="py-4">
+              {options.map((option, index) => (
+                <TouchableOpacity
+                  key={option.value}
+                  onPress={() => handleSelect(option.value as DurationType)}
+                  className={`py-4 px-6 mx-4 rounded-xl mb-2 ${
+                    value === option.value
+                      ? "bg-blue-50 border-2 border-blue-200"
+                      : "bg-gray-50 border border-gray-100"
+                  }`}
+                >
+                  <View className="flex-row items-center justify-between">
+                    <Text
+                      className={`text-lg font-medium ${
+                        value === option.value
+                          ? "text-blue-600"
+                          : "text-gray-700"
+                      }`}
+                    >
+                      {option.label}
+                    </Text>
+                    {value === option.value && (
+                      <View className="w-6 h-6 bg-blue-500 rounded-full items-center justify-center">
+                        <Text className="text-white text-sm font-bold">✓</Text>
+                      </View>
+                    )}
+                  </View>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </Animated.View>
+        </Animated.View>
+      </Modal>
+    </>
+  );
+};
 
 export default function HealthInsightsScreen() {
+  const [duration, setDuration] = useState<DurationType>("week");
   const { user } = useUser();
   const router = useRouter();
   const userData = useQuery(
     api.users.getUserByClerkId,
     user?.id ? { clerkId: user.id } : "skip"
   );
+
+  // Handle duration change
+  const handleDurationChange = useCallback((newValue: DurationType) => {
+    setDuration(newValue);
+  }, []);
+
+  // Get current data based on duration
+  const getCurrentData = useCallback(() => {
+    return duration === "week" ? weeklyData : monthlyData;
+  }, [duration]);
 
   if (!user) return null;
   if (userData === undefined)
@@ -56,7 +235,31 @@ export default function HealthInsightsScreen() {
 
       <ScrollView className="flex-1 px-4 pt-6">
         {/* Custom Intake Chart */}
-        <CustomIntakeChart data={data} variant="bar" max={2500} />
+
+        <View
+          className="bg-white border border-gray-200 rounded-3xl mb-6"
+          style={styles.shadow}
+        >
+          <View className="flex-row  items-center justify-between px-6 py-6 border-b border-gray-200">
+            <AppText className="text-lg font-semibold text-gray-900 mb-4">
+              Daily Intake
+            </AppText>
+
+            {/* Keyboard Spinner Picker */}
+            <SpinnerPicker
+              value={duration}
+              onValueChange={handleDurationChange}
+            />
+          </View>
+
+          <View className=" mt-8">
+            <CustomIntakeChart
+              data={getCurrentData()}
+              duration={duration}
+              max={2500}
+            />
+          </View>
+        </View>
 
         {/* Weekly Overview */}
         <View className="bg-white rounded-lg p-6 mb-6">
@@ -276,3 +479,16 @@ export default function HealthInsightsScreen() {
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  shadow: {
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 10,
+    },
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    elevation: 8,
+  },
+});
