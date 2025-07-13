@@ -133,7 +133,7 @@ export default function NotificationsScreen() {
         </View>
       </View>
 
-      <ScrollView className="flex-1 px-4 pt-6">
+      <ScrollView className="flex-1 px-6 pt-6">
         {/* Permission Status */}
         {!settings.enabled && (
           <View className="bg-red-50 p-4 rounded-lg mb-6">
@@ -212,7 +212,7 @@ export default function NotificationsScreen() {
           </AppText>
 
           <View className="space-y-4 px-6 overflow-hidden">
-            <View className="flex-row items-center justify-between my-4">
+            <View className="flex-row items-center justify-between my-6">
               <View className="flex-1">
                 <AppText
                   tweight="medium"
@@ -231,7 +231,7 @@ export default function NotificationsScreen() {
             </View>
             <DashedSeparator width={500} />
 
-            <View className="flex-row items-center justify-between my-4">
+            <View className="flex-row items-center justify-between my-6">
               <View className="flex-1">
                 <AppText
                   tweight="medium"
@@ -250,7 +250,7 @@ export default function NotificationsScreen() {
             </View>
             <DashedSeparator width={500} />
 
-            <View className="flex-row items-center justify-between my-4">
+            <View className="flex-row items-center justify-between my-6">
               <View className="flex-1">
                 <AppText
                   tweight="medium"
@@ -269,7 +269,7 @@ export default function NotificationsScreen() {
             </View>
             <DashedSeparator width={500} />
 
-            <View className="flex-row items-center justify-between my-4">
+            <View className="flex-row items-center justify-between my-6">
               <View className="flex-1">
                 <AppText
                   tweight="medium"
@@ -287,7 +287,7 @@ export default function NotificationsScreen() {
               />
             </View>
             <DashedSeparator width={500} />
-            <View className="flex-row items-center justify-between my-4">
+            <View className="flex-row items-center justify-between my-6">
               <View className="flex-1">
                 <AppText className="text-base font-medium text-gray-900">
                   Tips & Advice

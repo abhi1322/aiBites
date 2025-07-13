@@ -10,6 +10,10 @@ import {
 } from "lucide-react-native";
 import { ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { api } from "../../../convex/_generated/api";
+import CustomIntakeChart from "../../components/CustomIntakeChart";
+
+// dummy data
+const data = [1800, 1900, 2000, 2100, 2000, 2080, 1850];
 
 export default function HealthInsightsScreen() {
   const { user } = useUser();
@@ -51,10 +55,13 @@ export default function HealthInsightsScreen() {
       </View>
 
       <ScrollView className="flex-1 px-4 pt-6">
+        {/* Custom Intake Chart */}
+        <CustomIntakeChart data={data} variant="bar" max={2500} />
+
         {/* Weekly Overview */}
         <View className="bg-white rounded-lg p-6 mb-6">
           <Text className="text-lg font-semibold text-gray-900 mb-4">
-            This Week's Overview
+            This Week&apos;s Overview
           </Text>
 
           <View className="space-y-4">
@@ -222,7 +229,8 @@ export default function HealthInsightsScreen() {
                 Great Job on Consistency!
               </Text>
               <Text className="text-xs text-green-700">
-                You've logged meals for 6 out of 7 days this week. Keep it up!
+                You&apos;ve logged meals for 6 out of 7 days this week. Keep it
+                up!
               </Text>
             </View>
 
