@@ -5,8 +5,8 @@ import { useRouter } from "expo-router";
 import {
   ArrowLeft,
   BarChart3,
-  Calendar,
   ChevronDown,
+  FilePieChart,
   // FileText,
   Target,
   TrendingUp,
@@ -459,6 +459,7 @@ export default function HealthInsightsScreen() {
                 className="bg-neutral-800 rounded-lg px-3 py-2 flex-row items-center"
               >
                 {/* <FileText size={16} color="#ffffff" /> */}
+                <FilePieChart size={16} color="#ffffff" />
                 <AppText className="text-white text-sm font-medium ml-1">
                   Report
                 </AppText>
@@ -641,65 +642,6 @@ export default function HealthInsightsScreen() {
                 </AppText>
               </View>
             </>
-          </View>
-        </View>
-
-        {/* Historical Data */}
-        <View
-          className="bg-white rounded-2xl mb-8 border border-neutral-200"
-          style={styles.shadow}
-        >
-          <AppText
-            tweight="regular"
-            className="text-xl text-neutral-800 px-6 py-8 border-b border-neutral-200"
-          >
-            Historical Data
-          </AppText>
-
-          <View className="space-y-4 px-6 overflow-hidden">
-            <TouchableOpacity
-              className="flex-row items-center justify-between my-6"
-              onPress={async () => {
-                if (nutritionData?.chartData && !isGenerating) {
-                  const result = await generateReport(
-                    nutritionData.chartData,
-                    {
-                      fullName: `${userData?.firstName} ${userData?.lastName}`,
-                      calorieGoal: userData?.calorieGoal,
-                      proteinGoal: userData?.proteinGoal,
-                      carbGoal: userData?.carbGoal,
-                      fatGoal: userData?.fatGoal,
-                    },
-                    duration
-                  );
-
-                  if (result.success) {
-                    console.log("Report generated successfully");
-                  } else {
-                    console.error("Failed to generate report:", result.error);
-                  }
-                }
-              }}
-            >
-              <View className="flex-row items-center">
-                <Calendar size={20} color="#6b7280" />
-                <AppText className="text-base font-medium text-neutral-800 ml-3">
-                  Monthly Report
-                </AppText>
-              </View>
-              <AppText className="text-neutral-600">View</AppText>
-            </TouchableOpacity>
-            <DashedSeparator width={500} />
-
-            <TouchableOpacity className="flex-row items-center justify-between my-6">
-              <View className="flex-row items-center">
-                <BarChart3 size={20} color="#6b7280" />
-                <AppText className="text-base font-medium text-neutral-800 ml-3">
-                  Progress Charts
-                </AppText>
-              </View>
-              <AppText className="text-neutral-600">View</AppText>
-            </TouchableOpacity>
           </View>
         </View>
       </ScrollView>

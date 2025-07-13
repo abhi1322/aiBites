@@ -40,6 +40,7 @@ const BarChart = ({ data, max }: { data: number[]; max: number }) => {
         const originalIndex = data.length - 1 - index; // Get original index for date calculation
         const daysFromToday = originalIndex; // Days from today (0 = today, 1 = yesterday, etc.)
 
+        console.log(height, value, max);
         const date = new Date();
         date.setDate(date.getDate() - daysFromToday);
 
@@ -58,12 +59,15 @@ const BarChart = ({ data, max }: { data: number[]; max: number }) => {
             className="flex-col justify-end h-[150px] items-center relative"
             activeOpacity={0.8}
           >
+            {height === 0 && (
+              <View className="w-full h-1/4  rounded-lg border border-neutral-200 border-dashed" />
+            )}
             <Svg height={height} width={40} style={{ zIndex: 1 }}>
               <Rect
                 x={0}
                 y={0}
                 width={40}
-                height={height}
+                height={height === 0 ? 15 : height}
                 fill={selected === index ? "#333333" : "#EBEBEB"}
                 rx={5}
                 ry={5}
