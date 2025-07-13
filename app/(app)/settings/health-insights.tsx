@@ -7,6 +7,7 @@ import {
   BarChart3,
   Calendar,
   ChevronDown,
+  // FileText,
   Target,
   TrendingUp,
 } from "lucide-react-native";
@@ -25,6 +26,7 @@ import {
 import { api } from "../../../convex/_generated/api";
 import CustomIntakeChart from "../../components/CustomIntakeChart";
 import DashedSeparator from "../../components/ui/DashedSeparator";
+import { useSimpleNutritionReport } from "../../utils/simpleNutritionReport";
 
 type DurationType = "week" | "month";
 
@@ -325,6 +327,7 @@ export default function HealthInsightsScreen() {
   const [duration, setDuration] = useState<DurationType>("week");
   const { user } = useUser();
   const router = useRouter();
+  const { generateReport, isGenerating } = useSimpleNutritionReport();
   const userData = useQuery(
     api.users.getUserByClerkId,
     user?.id ? { clerkId: user.id } : "skip"
@@ -429,11 +432,44 @@ export default function HealthInsightsScreen() {
               Daily Intake
             </AppText>
 
-            {/* Keyboard Spinner Picker */}
-            <SpinnerPicker
-              value={duration}
-              onValueChange={handleDurationChange}
-            />
+            <View className="flex-row items-center gap-3">
+              {/* Report Generation Button */}
+              <TouchableOpacity
+                onPress={async () => {
+                  if (nutritionData?.chartData && !isGenerating) {
+                    const result = await generateReport(
+                      nutritionData.chartData,
+                      {
+                        fullName: `${userData?.firstName} ${userData?.lastName}`,
+                        calorieGoal: userData?.calorieGoal,
+                        proteinGoal: userData?.proteinGoal,
+                        carbGoal: userData?.carbGoal,
+                        fatGoal: userData?.fatGoal,
+                      },
+                      duration
+                    );
+
+                    if (result.success) {
+                      console.log("Report generated successfully");
+                    } else {
+                      console.error("Failed to generate report:", result.error);
+                    }
+                  }
+                }}
+                className="bg-neutral-800 rounded-lg px-3 py-2 flex-row items-center"
+              >
+                {/* <FileText size={16} color="#ffffff" /> */}
+                <AppText className="text-white text-sm font-medium ml-1">
+                  Report
+                </AppText>
+              </TouchableOpacity>
+
+              {/* Keyboard Spinner Picker */}
+              <SpinnerPicker
+                value={duration}
+                onValueChange={handleDurationChange}
+              />
+            </View>
           </View>
 
           <View className="my-8 ">
@@ -621,7 +657,30 @@ export default function HealthInsightsScreen() {
           </AppText>
 
           <View className="space-y-4 px-6 overflow-hidden">
-            <TouchableOpacity className="flex-row items-center justify-between my-6">
+            <TouchableOpacity
+              className="flex-row items-center justify-between my-6"
+              onPress={async () => {
+                if (nutritionData?.chartData && !isGenerating) {
+                  const result = await generateReport(
+                    nutritionData.chartData,
+                    {
+                      fullName: `${userData?.firstName} ${userData?.lastName}`,
+                      calorieGoal: userData?.calorieGoal,
+                      proteinGoal: userData?.proteinGoal,
+                      carbGoal: userData?.carbGoal,
+                      fatGoal: userData?.fatGoal,
+                    },
+                    duration
+                  );
+
+                  if (result.success) {
+                    console.log("Report generated successfully");
+                  } else {
+                    console.error("Failed to generate report:", result.error);
+                  }
+                }
+              }}
+            >
               <View className="flex-row items-center">
                 <Calendar size={20} color="#6b7280" />
                 <AppText className="text-base font-medium text-neutral-800 ml-3">
