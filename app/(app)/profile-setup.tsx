@@ -5,6 +5,7 @@ import {
   Keyboard,
   Platform,
   ScrollView,
+  StyleSheet,
   TouchableWithoutFeedback,
   View,
 } from "react-native";
@@ -197,3 +198,16 @@ export default function ProfileSetupScreen() {
 export const options = {
   headerShown: false,
 };
+
+const styles = StyleSheet.create({
+  shadow: {
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 10,
+    },
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    elevation: 8,
+  },
+});

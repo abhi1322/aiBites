@@ -9,7 +9,7 @@ import { useAuth, useUser } from "@clerk/clerk-expo";
 import { useQuery } from "convex/react";
 import { useRouter } from "expo-router";
 import { LogOut } from "lucide-react-native";
-import { Alert, Image, ScrollView, Text, View } from "react-native";
+import { Alert, Image, ScrollView, StyleSheet, Text, View } from "react-native";
 import { api } from "../../../convex/_generated/api";
 
 export default function ProfileScreen() {
@@ -58,8 +58,9 @@ export default function ProfileScreen() {
             {userData.profileImage ? (
               <Image
                 source={{ uri: userData.profileImage }}
-                className="w-24 h-24 rounded-full border-2 border-neutral-300"
+                className="w-24 h-24 bg-white rounded-full border-2 border-neutral-200 overflow-visible"
                 resizeMode="cover"
+                style={styles.shadow}
               />
             ) : (
               <View className="w-24 h-24 rounded-full bg-gray-200 items-center justify-center">
@@ -115,3 +116,16 @@ export default function ProfileScreen() {
     </ScrollView>
   );
 }
+
+const styles = StyleSheet.create({
+  shadow: {
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 10,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 10,
+    elevation: 8,
+  },
+});
