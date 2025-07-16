@@ -10,7 +10,6 @@ import {
   Platform,
   ScrollView,
   Text,
-  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
@@ -19,6 +18,8 @@ import { AppText } from "../components/AppText";
 import OTPInput from "../components/OTPInput";
 import { DarkButton, LightButton } from "../components/ui/Button";
 import DashedSeparator from "../components/ui/DashedSeparator";
+import { Input } from "../components/ui/Input";
+import { validateEmail, validatePassword } from "../utils/validator";
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -32,7 +33,8 @@ export default function SignUpScreen() {
   const [pendingVerification, setPendingVerification] = useState(false);
   const [code, setCode] = useState("");
   const [otpError, setOtpError] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
+  const [emailError, setEmailError] = useState("");
+  const [passwordError, setPasswordError] = useState("");
 
   // OAuth hooks
   const { startOAuthFlow: startGoogleOAuthFlow } = useOAuth({
@@ -326,53 +328,32 @@ export default function SignUpScreen() {
             <View className="flex-1 w-[90vw] gap-4 justify-end">
               {/* Email */}
               <View className="flex items-start">
-                <AppText
-                  className="text-sm text-neutral-500 text-center"
-                  tweight="regular"
-                >
-                  Email
-                </AppText>
-                <TextInput
-                  placeholder="Enter your email"
+                <Input
+                  label="Email"
                   value={emailAddress}
-                  onChangeText={setEmailAddress}
-                  className="w-full h-14 rounded-md border border-[#E0E0E0] p-2"
+                  onValueChange={setEmailAddress}
+                  validator={validateEmail}
+                  error={emailError}
+                  setError={setEmailError}
+                  placeholder="Enter your email"
+                  autoCapitalize="none"
+                  keyboardType="email-address"
+                  className="mb-2"
                 />
               </View>
               {/* Password */}
               <View className="flex items-start">
-                <AppText
-                  className="text-sm text-neutral-500 text-center"
-                  tweight="regular"
-                >
-                  Password
-                </AppText>
-                <View className="w-full h-14 rounded-md border border-[#E0E0E0] flex-row items-center px-2">
-                  <TextInput
-                    placeholder="Enter your password"
-                    value={password}
-                    onChangeText={setPassword}
-                    className="flex-1 h-full"
-                    secureTextEntry={!showPassword}
-                  />
-                  <TouchableOpacity
-                    onPress={() => setShowPassword((prev) => !prev)}
-                    className="pl-2 pr-1"
-                    hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                  >
-                    <AppText className="text-xl">
-                      {showPassword ? (
-                        <Ionicons name="eye-outline" size={24} color="black" />
-                      ) : (
-                        <Ionicons
-                          name="eye-off-outline"
-                          size={24}
-                          color="black"
-                        />
-                      )}
-                    </AppText>
-                  </TouchableOpacity>
-                </View>
+                <Input
+                  label="Password"
+                  value={password}
+                  onValueChange={setPassword}
+                  validator={validatePassword}
+                  error={passwordError}
+                  setError={setPasswordError}
+                  placeholder="Enter your password"
+                  secureTextEntry={true}
+                  autoCapitalize="none"
+                />
               </View>
               {/* Sign up */}
               <AppText className="text-sm text-neutral-500" tweight="regular">

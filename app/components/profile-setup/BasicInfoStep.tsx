@@ -1,7 +1,9 @@
 import React, { useState } from "react";
-import { Image, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { Image, Text, TouchableOpacity, View } from "react-native";
 import DropDownPicker from "react-native-dropdown-picker";
+import { validateName } from "../../utils/validator";
 import { AppText } from "../AppText";
+import { Input } from "../ui/Input";
 
 // Profile data interface
 interface ProfileData {
@@ -40,6 +42,8 @@ export const BasicInfoStep: React.FC<BasicInfoStepProps> = ({
     { label: "Female", value: "female" },
     { label: "Other", value: "other" },
   ]);
+  const [firstNameError, setFirstNameError] = useState("");
+  const [lastNameError, setLastNameError] = useState("");
 
   console.log("Profile image URL:", profileData.profileImage);
 
@@ -88,12 +92,14 @@ export const BasicInfoStep: React.FC<BasicInfoStepProps> = ({
           >
             First Name
           </AppText>
-          <TextInput
+          <Input
             placeholder="Enter your first name"
             textContentType="givenName"
             value={profileData.firstName}
-            onChangeText={(firstName) => updateProfileData({ firstName })}
-            className="w-full h-14 rounded-md border border-[#E0E0E0] p-2"
+            onValueChange={(firstName) => updateProfileData({ firstName })}
+            validator={validateName}
+            error={firstNameError}
+            setError={setFirstNameError}
           />
         </View>
         <View className="w-[45%] items-start">
@@ -103,12 +109,14 @@ export const BasicInfoStep: React.FC<BasicInfoStepProps> = ({
           >
             Last Name
           </AppText>
-          <TextInput
+          <Input
             placeholder="Enter your last name"
             textContentType="familyName"
             value={profileData.lastName}
-            onChangeText={(lastName) => updateProfileData({ lastName })}
-            className="w-full h-14 rounded-md border border-[#E0E0E0] p-2"
+            onValueChange={(lastName) => updateProfileData({ lastName })}
+            validator={validateName}
+            error={lastNameError}
+            setError={setLastNameError}
           />
         </View>
       </View>

@@ -5,7 +5,7 @@ import FoodItemsCard from "@/app/components/FoodItemsCard";
 import { useUser } from "@clerk/clerk-expo";
 import axios from "axios";
 import { useQuery } from "convex/react";
-import { Redirect, useRouter } from "expo-router";
+import { Redirect, useLocalSearchParams, useRouter } from "expo-router";
 import LottieView from "lottie-react-native";
 import moment from "moment";
 import { useEffect, useState } from "react";
@@ -14,7 +14,10 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { api } from "../../../convex/_generated/api"; // Adjust the path as needed
 
 export default function HomeScreen() {
-  const [selectedDate, setSelectedDate] = useState(moment());
+  const { selectedDate } = useLocalSearchParams<{ selectedDate?: string }>();
+  const [date, setDate] = useState<Date>(
+    selectedDate ? new Date(selectedDate) : new Date()
+  );
   const [refreshing, setRefreshing] = useState(false);
   const { user } = useUser();
   const router = useRouter();
@@ -36,8 +39,14 @@ export default function HomeScreen() {
       });
   }, []);
 
+  useEffect(() => {
+    if (selectedDate) {
+      setDate(new Date(selectedDate));
+    }
+  }, [selectedDate]);
+
   const handleDateChange = (date: moment.Moment) => {
-    setSelectedDate(date);
+    setDate(date.toDate());
   };
 
   const handleNotificationSettings = () => {
@@ -48,7 +57,7 @@ export default function HomeScreen() {
     setRefreshing(true);
     try {
       // Reset the selected date to current date
-      setSelectedDate(moment());
+      setDate(moment().toDate());
 
       // Add a small delay to show the refresh indicator
       await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -124,7 +133,7 @@ export default function HomeScreen() {
   return (
     <SafeAreaView className="flex-1 bg-white">
       <CalendarStripComponent
-        selectedDate={selectedDate}
+        selectedDate={moment(date)}
         onDateChange={handleDateChange}
       />
       <ScrollView
@@ -161,7 +170,7 @@ export default function HomeScreen() {
           <View className="mb-10">
             <CircularNutritionSummary
               userId={clerkID}
-              selectedDate={selectedDate}
+              selectedDate={moment(date)}
               userGoals={{
                 calorieGoal: userData?.calorieGoal,
                 proteinGoal: userData?.proteinGoal,
@@ -169,7 +178,7 @@ export default function HomeScreen() {
                 fatGoal: userData?.fatGoal,
               }}
             />
-            <FoodItemsCard userId={clerkID} selectedDate={selectedDate} />
+            <FoodItemsCard userId={clerkID} selectedDate={moment(date)} />
           </View>
         )}
       </ScrollView>

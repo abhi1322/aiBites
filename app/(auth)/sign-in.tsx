@@ -9,14 +9,15 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  TextInput,
-  TouchableOpacity,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { Toast } from "toastify-react-native";
 import { AppText } from "../components/AppText";
 import { DarkButton, LightButton } from "../components/ui/Button";
 import DashedSeparator from "../components/ui/DashedSeparator";
+import { Input } from "../components/ui/Input";
+import { validateEmail, validatePassword } from "../utils/validator";
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -29,6 +30,8 @@ export default function SignInScreen() {
   const [password, setPassword] = React.useState("");
   const [loading, setLoading] = React.useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [emailError, setEmailError] = useState("");
+  const [passwordError, setPasswordError] = useState("");
 
   // OAuth hooks
   const { startOAuthFlow: startGoogleOAuthFlow } = useOAuth({
@@ -48,10 +51,26 @@ export default function SignInScreen() {
   const onSignInPress = async () => {
     if (!isLoaded) return;
 
-    if (!emailAddress || !password) {
-      Alert.alert("Error", "Please fill in all fields");
-      return;
+    let valid = true;
+    if (!emailAddress) {
+      setEmailError("Email is required");
+      Toast.error("Email is required");
+      valid = false;
+    } else if (!validateEmail(emailAddress)) {
+      setEmailError("Invalid email address");
+      Toast.error("Invalid email address");
+      valid = false;
+    } else {
+      setEmailError("");
     }
+    if (!password) {
+      setPasswordError("Password is required");
+      Toast.error("Password is required");
+      valid = false;
+    } else {
+      setPasswordError("");
+    }
+    if (!valid) return;
 
     setLoading(true);
     try {
@@ -59,18 +78,16 @@ export default function SignInScreen() {
         identifier: emailAddress,
         password,
       });
-
       if (signInAttempt.status === "complete") {
         await setActive({ session: signInAttempt.createdSessionId });
-        // Let app layout handle redirect based on profile completion
         router.replace("../(app)");
       } else {
         console.error(JSON.stringify(signInAttempt, null, 2));
-        Alert.alert("Error", "Sign in failed. Please try again.");
+        Toast.error("Sign in failed. Please try again.");
       }
     } catch (err) {
       console.error(JSON.stringify(err, null, 2));
-      Alert.alert("Error", "Invalid email or password. Please try again.");
+      Toast.error("Invalid email or password. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -189,54 +206,32 @@ export default function SignInScreen() {
             <View className="flex-1 w-[90vw] gap-4 justify-end">
               {/* Email */}
               <View className="flex items-start">
-                <AppText
-                  className="text-sm text-neutral-500 text-center"
-                  tweight="regular"
-                >
-                  Email
-                </AppText>
-                <TextInput
-                  placeholder="Enter your email"
+                <Input
+                  label="Email"
                   value={emailAddress}
-                  onChangeText={setEmailAddress}
-                  className="w-full h-14 rounded-md border border-[#E0E0E0] p-2"
+                  onValueChange={setEmailAddress}
+                  validator={validateEmail}
+                  error={emailError}
+                  setError={setEmailError}
+                  placeholder="Enter your email"
+                  autoCapitalize="none"
+                  keyboardType="email-address"
+                  className="mb-2"
                 />
               </View>
               {/* Password */}
               <View className="flex items-start">
-                <AppText
-                  className="text-sm text-neutral-500 text-center"
-                  tweight="regular"
-                >
-                  Password
-                </AppText>
-                <View className="w-full h-14 rounded-md border border-[#E0E0E0] flex-row items-center px-2">
-                  <TextInput
-                    placeholder="Enter your password"
-                    value={password}
-                    onChangeText={setPassword}
-                    className="flex-1 h-full"
-                    secureTextEntry={!showPassword}
-                  />
-                  <TouchableOpacity
-                    onPress={() => setShowPassword((prev) => !prev)}
-                    className="pl-2 pr-1"
-                    hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                  >
-                    {/* Use a real icon in production, e.g. from react-native-vector-icons */}
-                    <AppText className="text-xl">
-                      {showPassword ? (
-                        <Ionicons name="eye-outline" size={24} color="black" />
-                      ) : (
-                        <Ionicons
-                          name="eye-off-outline"
-                          size={24}
-                          color="black"
-                        />
-                      )}
-                    </AppText>
-                  </TouchableOpacity>
-                </View>
+                <Input
+                  label="Password"
+                  value={password}
+                  onValueChange={setPassword}
+                  validator={validatePassword}
+                  error={passwordError}
+                  setError={setPasswordError}
+                  placeholder="Enter your password"
+                  secureTextEntry={true}
+                  autoCapitalize="none"
+                />
               </View>
               {/* Sign up */}
               <AppText className="text-sm text-neutral-500" tweight="regular">

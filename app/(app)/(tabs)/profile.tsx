@@ -54,13 +54,15 @@ export default function ProfileScreen() {
       <View className="bg-white pt-12 pb-6 px-4 mt-12">
         <View className="items-center">
           {/* Profile Image */}
-          <View className="relative mb-4">
+          <View
+            className="relative mb-4 rounded-full "
+            style={styles.shadow}
+          >
             {userData.profileImage ? (
               <Image
                 source={{ uri: userData.profileImage }}
-                className="w-24 h-24 bg-white rounded-full border-2 border-neutral-200 overflow-visible"
+                className="w-24 h-24 bg-white border-2 border-neutral-200  rounded-full"
                 resizeMode="cover"
-                style={styles.shadow}
               />
             ) : (
               <View className="w-24 h-24 rounded-full bg-gray-200 items-center justify-center">

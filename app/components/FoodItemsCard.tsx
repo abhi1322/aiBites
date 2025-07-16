@@ -11,6 +11,7 @@ import Calorie from "@/assets/icons/calories.svg";
 import Carbs from "@/assets/icons/carbs.svg";
 import Fat from "@/assets/icons/fat-icon.svg";
 import Protein from "@/assets/icons/protein.svg";
+import { Clock } from "lucide-react-native";
 
 interface FoodItemsCardProps {
   userId: string;
@@ -139,16 +140,29 @@ function FoodItemCard({ foodItem }: FoodItemCardProps) {
 
         {/* Food Details */}
         <View className="flex-1 items-start">
-          <AppText
-            tweight="medium"
-            className="font-medium text-neutral-700 capitalize text-lg"
-            numberOfLines={1}
-          >
-            {foodItem.name}
-          </AppText>
-          <AppText className="text-sm text-neutral-500 capitalize">
-            Serving Size: {foodItem.servingSize}
-          </AppText>
+          <View className="w-full flex-row justify-between">
+            <View className="flex-1">
+              <AppText
+                tweight="medium"
+                className="font-medium text-neutral-700 capitalize text-lg"
+                numberOfLines={1}
+              >
+                {foodItem.name}
+              </AppText>
+              <AppText className="text-sm text-neutral-500 capitalize">
+                Serving Size: {foodItem.servingSize}
+              </AppText>
+            </View>
+
+            {/* add time to the food item */}
+            <View className="rounded-full justify-center h-6 bg-neutral-200 p-1 flex-row items-center mt-1">
+              <Clock size={16} color="#737373" strokeWidth={1.5} />
+              <AppText className="text-xs text-neutral-500 capitalize">
+                {"  "}
+                {moment(foodItem.createdAt).format("h:mm A")}
+              </AppText>
+            </View>
+          </View>
 
           {/* Nutrition Info */}
           {/* in grid  */}

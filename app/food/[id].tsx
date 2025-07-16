@@ -4,7 +4,7 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import { useFocusEffect } from "@react-navigation/native";
 import { useQuery } from "convex/react";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   ActivityIndicator,
   Image,
@@ -90,7 +90,15 @@ export default function FoodDetailScreen() {
         {/* Back to Home Button */}
         <View className="w-16 h-20 absolute top-14 left-8 z-10">
           <LightButton
-            onPress={() => router.replace("/home")}
+            onPress={() => {
+              // Pass the food item's creation date as a parameter
+              router.replace({
+                pathname: "/home",
+                params: {
+                  selectedDate: new Date(food._creationTime).toISOString(),
+                },
+              });
+            }}
             icon={<Ionicons name="arrow-back" size={20} color={"#C0C0C0"} />}
           />
         </View>

@@ -4,11 +4,12 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
+import { validatePositiveNumber } from "../../utils/validator";
 import { AppText } from "../AppText";
+import { Input } from "../ui/Input";
 import { estimateNutrition } from "./bmiCalculator";
 
 interface NutritionStepProps {
@@ -64,6 +65,11 @@ export const NutritionStep: React.FC<NutritionStepProps> = ({
     updateFatGoal(fats.toString());
   };
 
+  const [calorieError, setCalorieError] = React.useState("");
+  const [proteinError, setProteinError] = React.useState("");
+  const [carbError, setCarbError] = React.useState("");
+  const [fatError, setFatError] = React.useState("");
+
   return (
     <KeyboardAvoidingView
       style={{ flex: 1 }}
@@ -75,20 +81,20 @@ export const NutritionStep: React.FC<NutritionStepProps> = ({
         keyboardShouldPersistTaps="handled"
       >
         <View className=" ">
-      <View className="text-center items-center justify-center">
+          <View className="text-center items-center justify-center">
             <AppText
               tweight="semibold"
               className="text-2xl text-neutral-800 mb-1"
             >
-          Nutrition Goals
-        </AppText>
-        <AppText
-          tweight="regular"
-          className="text-neutral-500 text-sm text-center  w-[80%]"
-        >
-          Set your daily calorie and macronutrient targets
-        </AppText>
-      </View>
+              Nutrition Goals
+            </AppText>
+            <AppText
+              tweight="regular"
+              className="text-neutral-500 text-sm text-center  w-[80%]"
+            >
+              Set your daily calorie and macronutrient targets
+            </AppText>
+          </View>
           <View className="mt-2 py-2 flex flex-col items-center justify-center gap-2">
             <AppText
               tweight="regular"
@@ -125,26 +131,27 @@ export const NutritionStep: React.FC<NutritionStepProps> = ({
             </LinearGradient>
           </View>
 
-      {/* Calorie Goal */}
+          {/* Calorie Goal */}
           <View className="mt-4">
             <AppText
               tweight="regular"
               className="text-neutral-500 text-sm mt-2 w-[80%]"
             >
-          Daily Calorie Goal *
-        </AppText>
-        <TextInput
-          value={calorieGoal}
-          onChangeText={updateCalorieGoal}
-          placeholder="e.g. 2000"
-              className="w-full h-14 rounded-md border border-[#E0E0E0] p-2"
-          keyboardType="numeric"
-          autoCorrect={false}
-          spellCheck={false}
-        />
-      </View>
-
-      {/* Macronutrients */}
+              Daily Calorie Goal *
+            </AppText>
+            <Input
+              value={calorieGoal}
+              onValueChange={updateCalorieGoal}
+              validator={validatePositiveNumber}
+              error={calorieError}
+              setError={setCalorieError}
+              placeholder="e.g. 2000"
+              keyboardType="numeric"
+              autoCorrect={false}
+              spellCheck={false}
+            />
+          </View>
+          {/* Macronutrients */}
           <View className="mt-1">
             <AppText
               tweight="medium"
@@ -160,17 +167,18 @@ export const NutritionStep: React.FC<NutritionStepProps> = ({
                 >
                   Protein Goal (g)
                 </AppText>
-          <TextInput
-            value={proteinGoal}
-            onChangeText={updateProteinGoal}
-            placeholder="e.g. 150"
-                  className="w-full h-14 rounded-lg border border-[#E0E0E0] p-2"
-            keyboardType="numeric"
-            autoCorrect={false}
-            spellCheck={false}
-          />
-        </View>
-
+                <Input
+                  value={proteinGoal}
+                  onValueChange={updateProteinGoal}
+                  validator={validatePositiveNumber}
+                  error={proteinError}
+                  setError={setProteinError}
+                  placeholder="e.g. 150"
+                  keyboardType="numeric"
+                  autoCorrect={false}
+                  spellCheck={false}
+                />
+              </View>
               <View className="flex-1">
                 <AppText
                   tweight="regular"
@@ -178,17 +186,18 @@ export const NutritionStep: React.FC<NutritionStepProps> = ({
                 >
                   Carb Goal (g)
                 </AppText>
-          <TextInput
-            value={carbGoal}
-            onChangeText={updateCarbGoal}
-            placeholder="e.g. 250"
-                  className="w-full h-14 rounded-md border border-[#E0E0E0] p-2"
-            keyboardType="numeric"
-            autoCorrect={false}
-            spellCheck={false}
-          />
-        </View>
-
+                <Input
+                  value={carbGoal}
+                  onValueChange={updateCarbGoal}
+                  validator={validatePositiveNumber}
+                  error={carbError}
+                  setError={setCarbError}
+                  placeholder="e.g. 250"
+                  keyboardType="numeric"
+                  autoCorrect={false}
+                  spellCheck={false}
+                />
+              </View>
               <View className="flex-1">
                 <AppText
                   tweight="regular"
@@ -196,19 +205,21 @@ export const NutritionStep: React.FC<NutritionStepProps> = ({
                 >
                   Fat Goal (g)
                 </AppText>
-          <TextInput
-            value={fatGoal}
-            onChangeText={updateFatGoal}
-            placeholder="e.g. 70"
-                  className="w-full h-14 rounded-md border border-[#E0E0E0] p-2"
-            keyboardType="numeric"
-            autoCorrect={false}
-            spellCheck={false}
-          />
+                <Input
+                  value={fatGoal}
+                  onValueChange={updateFatGoal}
+                  validator={validatePositiveNumber}
+                  error={fatError}
+                  setError={setFatError}
+                  placeholder="e.g. 70"
+                  keyboardType="numeric"
+                  autoCorrect={false}
+                  spellCheck={false}
+                />
+              </View>
+            </View>
+          </View>
         </View>
-      </View>
-      </View>
-    </View>
       </ScrollView>
     </KeyboardAvoidingView>
   );
